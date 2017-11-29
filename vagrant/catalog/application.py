@@ -118,8 +118,8 @@ def newItem():
         return render_template('newitem.html',session=login_session,pagetitle='New Items')
 
     
-@app.route('/catalog/<itemname>/edit',methods=['GET','POST'])
-def editItem(itemname):
+@app.route('/catalog/<category>/<itemname>/edit',methods=['GET','POST'])
+def editItem(category,itemname):
     item = session.query(Item).filter_by(category=category,title=itemname).one()
     if 'username' not in login_session:
         return redirect('/login');      
@@ -131,8 +131,8 @@ def editItem(itemname):
         return render_template('edititem.html',session=login_session,item=item,pagetitle='Edit Items')
     
 
-@app.route('/catalog/<itemname>/delete',methods=['GET','POST'])
-def deleteItem(itemname):
+@app.route('/catalog/<category>/<itemname>/delete',methods=['GET','POST'])
+def deleteItem(category,itemname):
     item = session.query(Item).filter_by(category=category,title=itemname).one()
     if 'username' not in login_session:
         return redirect('/login');      
