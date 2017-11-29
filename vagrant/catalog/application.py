@@ -9,6 +9,7 @@ import random,string
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
+from sqlalchemy import func
 import os, re
 import json
 
@@ -17,6 +18,9 @@ from oauth2client.client import FlowExchangeError
 import httplib2
 import requests
 import logging
+
+from flask_httpauth import HTTPBasicAuth
+auth = HTTPBasicAuth()
 
 
 engine = create_engine('sqlite:///catalog.db')
@@ -38,7 +42,7 @@ PASSWORD_RE = re.compile(r"^.{3,20}$")
 def valid_password(password):
     return password and PASSWORD_RE.match(password)
 
-def verify_password(password,verify_password):
+def match_password(password,verify_password):
     return password == verify_password 
 
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
@@ -46,38 +50,103 @@ def valid_email(email):
     return not email or EMAIL_RE.match(email) 
 
 
+#ADD @auth.verify_password decorator here
+@auth.verify_password
+def verify_password(username_or_token,password):
+    #check if the token is provided as username
+    print "username_or_token : %s" % username_or_token
+    print "password : %s" % password
+    user_id = UserProfile.verify_auth_token(username_or_token)
+    if user_id:
+        user = session.query(UserProfile).filter_by(id=user_id).one()
+    else:
+        user = session.query(UserProfile).filter_by(username=username_or_token).first()    
+        if not user:
+            print "User Not Found"
+            return False
+        elif not user.verify_password(password):
+            print "Unable to verify password"
+            return False        
+    if user:
+        g.user = user
+        return True                         
+    print "User Not Found"
+    return False
+        
+#add /token route here to get a token for a user with login credentials
+@app.route('/token')
+@auth.login_required
+def get_auth_token():
+    token = g.user.generate_auth_token()
+    return jsonify({'token':token.decode('ascii')})
+
+
 
 @app.route('/')
-@app.route('/home')
 @app.route('/catalog')
 def landingPage():
+    items = session.query(Item).all()
+    categories = session.query(Item.category,func.count(Item.category)).group_by(Item.category).all()
+
     #Below code show how to use HTML Template to achieve the same dynamically
-    if('provider' in login_session and 'username' in login_session ):   
-        return render_template('main.html',session=login_session,UserLogin=login_session['username'],LogoutSignup='logout',pagetitle='Home')
+    if('username' in login_session and checkAccessToken()):   
+        return render_template('main.html',session=login_session,items = items,categories=categories,pagetitle='Home')
     else:
-        return render_template('publicmain.html',session=login_session,UserLogin='login',LogoutSignup='signup',pagetitle='Home')    
+        return render_template('publicmain.html',session=login_session,items = items,categories=categories,pagetitle='Home')    
 
 @app.route('/catalog/<category>')
 @app.route('/catalog/<category>/items')
 def getCatalogItems(category):
-    return render_template('items.html',session=login_session,UserLogin='login',LogoutSignup='signup',pagetitle='Items')
+    categories = session.query(Item.category,func.count(Item.category)).group_by(Item.category).all()
+    items = session.query(Item).filter_by(category=category).all()
+    return render_template('items.html',session=login_session,items = items,categories=categories,pagetitle='Items')
+
+@app.route('/catalog/<category>/<itemname>')
+def getCatalogItemDetails(category,itemname):
+    item = session.query(Item).filter_by(category=category,title=itemname).one()
+    return render_template('itemdetail.html',session=login_session,item=item,category=category,pagetitle='Items')
 
 @app.route('/catalog/new',methods=['GET','POST'])
 def newItem():
-    return render_template('newitem.html',session=login_session,UserLogin='login',LogoutSignup='signup',pagetitle='New Items')
-    
-@app.route('/catalog/<item>/edit',methods=['GET','POST'])
-def editItem(category):
-    return render_template('edititem.html',session=login_session,UserLogin='login',LogoutSignup='signup',pagetitle='Edit Items')
+    if 'username' not in login_session:
+        return redirect('/login');  
+    if request.method == 'POST':      
+        createItem(request.form['newitem'],request.form['description'],request.form['category'],login_session['user_id'])
+        flash('New item created')
+        return  redirect(url_for('getCatalogItems',category=request.form['category']))
+    else:
+        return render_template('newitem.html',session=login_session,pagetitle='New Items')
 
-@app.route('/catalog/<item>/delete',methods=['GET','POST'])
-def deleteItem(category):
-    return render_template('deleteitem.html',session=login_session,UserLogin='login',LogoutSignup='signup',pagetitle='Delete Items')
+    
+@app.route('/catalog/<itemname>/edit',methods=['GET','POST'])
+def editItem(itemname):
+    item = session.query(Item).filter_by(category=category,title=itemname).one()
+    if 'username' not in login_session:
+        return redirect('/login');      
+    if request.method == 'POST':      
+        updateItem(request.form['title'],request.form['description'],request.form['category'],login_session['user_id'])
+        flash('Item updated succesfully')
+        return  redirect(url_for('getCatalogItems',category=request.form['category']))
+    else:
+        return render_template('edititem.html',session=login_session,item=item,pagetitle='Edit Items')
+    
+
+@app.route('/catalog/<itemname>/delete',methods=['GET','POST'])
+def deleteItem(itemname):
+    item = session.query(Item).filter_by(category=category,title=itemname).one()
+    if 'username' not in login_session:
+        return redirect('/login');      
+    if request.method == 'POST':      
+        deleteItem(request.form['title'],request.form['description'],request.form['category'],login_session['user_id'])
+        flash('Item deleted succesfully')
+        return  redirect(url_for('getCatalogItems',category=request.form['category']))
+    else:
+        return render_template('deleteitem.html',session=login_session,item=item,pagetitle='Delete Items')
 
 @app.route('/catalog.json')
+@auth.login_required
 def getCatalog():
     items = session.query(Item).all()
-    #Populate an empty database
     if items :
         return jsonify(catalog = [i.serialize for i in items])
 
@@ -95,11 +164,13 @@ def disconnect():
             del login_session['provider']
             flash("You have successfully been logged out.")
         return redirect(url_for('landingPage'))
-    # elif USER:
-    #     resp = make_response(redirect(url_for('landingPage')))
-    #     logout(resp)
-    #     flash("You have successfully been logged out.")
-    #     return resp
+    elif ('username' in login_session):
+        resp = make_response(redirect(url_for('landingPage')))
+        # logout(resp)
+        # del login_session['user_id']
+        del login_session['username']
+        flash("You have successfully been logged out.")
+        return resp
     else:
         flash("You were not logged in")
         return redirect(url_for('landingPage'))
@@ -344,13 +415,15 @@ def showLogin():
         user = getUserByName(user_name)
         if user :
             valid_user = True
-        if valid_user:      
+        if valid_user:
+            login_session['username']=user_name
+            login_session['user_id'] = user.id
             resp = make_response(redirect(url_for('landingPage')))            
             flash("You are now logged in as %s" % user_name)
             return resp
         else:   
             error  = "Invalid login"
-            return render_template('login.html',error = error,UserLogin='login',LogoutSignup='signup',uname=user_name,pagetitle='login')                 
+            return render_template('login.html',error = error,uname=user_name,pagetitle='login')                 
 
     else:    
         # USER = initialize()
@@ -361,8 +434,7 @@ def showLogin():
             #state = ''.join(random.choice(string.letters) for x in xrange(32))   #--Python 2.x
         state = ''.join(random.choice(string.ascii_letters) for x in range(32))    #--Python 3.x
         login_session['state']=state
-        #return "the current state is %s" % login_session['state']        
-        return render_template('login.html',STATE=state,UserLogin='login',LogoutSignup='signup',pagetitle='login')
+        return render_template('login.html',STATE=state,pagetitle='login')
 
 @app.route('/signup',methods=['GET','POST'])
 def signUp():
@@ -381,7 +453,7 @@ def signUp():
 
         username    = valid_username(input_username) 
         password    = valid_password(input_pw) 
-        verify      = verify_password(input_pw,input_vpw) 
+        verify      = match_password(input_pw,input_vpw) 
         email       = valid_email(input_email)
 
         unameerror  = None
@@ -413,15 +485,21 @@ def signUp():
             else:   
                 user_id = signupUser(input_username,input_username,input_pw,input_email)
                 resp = make_response(redirect(url_for('landingPage')))
-                login(resp,str(user_id))
+                # login(resp,str(user_id))
                 return resp;
     else:
-        kw = dict(UserLogin='login',LogoutSignup='signup',pagetitle='Signup')
+        kw = dict(pagetitle='Signup')
         # USER = initialize()
         # if USER:
         #     kw['UserLogin']=USER.user_name
         #     kw['LogoutSignup']='logout'
         return render_template('signup.html',**kw)    
+
+def createItem(name,description,category,user_id):
+    newItem = Item(title=name,description=description,category=category,user_id=user_id)
+    session.add(newItem)
+    session.commit()
+    return
 
 def getUserByName(username):
     try:
@@ -449,7 +527,7 @@ def signupUser(name,username,pw,email):
     newUser = UserProfile(username=username,password_hash=hash_pw,email=email,oauth_user='no')
     session.add(newUser)
     session.commit()    
-    return user.id
+    return newUser.id
 
 def checkAccessToken():
     stored_access_token = login_session.get('access_token')

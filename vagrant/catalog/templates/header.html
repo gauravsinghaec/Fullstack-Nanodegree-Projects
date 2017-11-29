@@ -1,13 +1,13 @@
-	{% if 'username' not in session and UserLogin == 'login' %}
+	{% if 'username' not in session %}
 	<div class="row profile-pic">
 			<img src="{{ url_for('static', filename='images/profile.png') }}">
 	</div>
 	<div class="row profile-status">
 		<ul>		
 		<li>
-			<a href="{{url_for('showLogin')}}" >{{UserLogin}}</a>
+			<a href="{{url_for('showLogin')}}" >login</a>
 		|
-			<a href="/{{LogoutSignup}}">{{ LogoutSignup }}</a>
+			<a href="/signup">signup</a>
 		</li>				
 		</ul>
 	</div>
@@ -22,9 +22,9 @@
 	<div class="row profile-status">		
 		<ul>		
 		<li>
-			<a href="{{url_for('landingPage')}}" >{{UserLogin}}</a>
+			<a href="{{url_for('landingPage')}}" >{{session['username']}}</a>
 		|
-			<a href="/{{LogoutSignup}}">{{ LogoutSignup }}</a>
+			<a href="/logout">logout</a>
 		</li>
 		</ul>						
 	</div>

@@ -28,6 +28,14 @@ button, .flash-message {
 form input {
   color: black; }
 
+.form-label{
+  text-align: right;
+}
+.form-field{
+  text-align: left;
+}
+
+
 table {
   margin: 0 auto;
   z-index: 1;
