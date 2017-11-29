@@ -150,6 +150,99 @@ def getCatalog():
     if items :
         return jsonify(catalog = [i.serialize for i in items])
 
+
+@app.route('/login',methods=['GET','POST'])
+def showLogin():
+    if request.method == 'POST':        
+        user_name = request.form['username']
+        password = request.form['password']
+        valid_user = False
+        user = getUserByName(user_name)
+        if user and user.verify_password(password):
+            valid_user = True
+        if valid_user:
+            login_session['username']=user_name
+            login_session['user_id'] = user.id
+            resp = make_response(redirect(url_for('landingPage')))            
+            flash("You are now logged in as %s" % user_name)
+            return resp
+        else:   
+            error  = "Invalid login"
+            return render_template('login.html',error = error,uname=user_name,pagetitle='login')                 
+
+    else:    
+        # USER = initialize()
+        # if USER:
+        #     return render_template('login.html',UserLogin=USER.user_name,LogoutSignup='logout',pagetitle='login')           
+        # else:
+            # Random string or rather salt 
+            #state = ''.join(random.choice(string.letters) for x in xrange(32))   #--Python 2.x
+        state = ''.join(random.choice(string.ascii_letters) for x in range(32))    #--Python 3.x
+        login_session['state']=state
+        return render_template('login.html',STATE=state,pagetitle='login')
+
+@app.route('/signup',methods=['GET','POST'])
+def signUp():
+    if request.method == 'POST':
+
+        input_username = request.form['username']
+        input_email = request.form['email']
+        input_pw    = request.form['password']
+        input_vpw   = request.form['verify']
+
+        params = dict(uname=input_username,email=input_email)
+        params['UserLogin'] = "login"
+        params['LogoutSignup'] = "signup"        
+        params['pagetitle'] = "Signup"        
+        have_error = False
+
+        username    = valid_username(input_username) 
+        password    = valid_password(input_pw) 
+        verify      = match_password(input_pw,input_vpw) 
+        email       = valid_email(input_email)
+
+        unameerror  = None
+        pwerror     = None
+        vpwerror    = None
+        emailerror  = None
+
+        if not username:
+            params['unameerror']  = "That's not a valid username."
+            have_error = True 
+        if not password:        
+            params['pwerror']     = "That's not a valid password."
+            have_error = True 
+        elif not verify:        
+            params['vpwerror']    = "Your passwords didn't match."
+            have_error = True 
+        if not email:
+            params['emailerror']  = "That's not a valid email."
+            have_error = True  
+
+        if have_error:
+            return render_template('signup.html',**params)
+        else:
+            user = getUserByName(input_username)
+            # user_id = getUserID(input_email)
+            # if user or user_id:
+            if user:
+                params['unameerror']  = "That user already exists"
+                return render_template('signup.html',**params)
+            else:   
+                user_id = signupUser(input_username,input_username,input_pw,input_email)
+                login_session['username']=input_username
+                login_session['user_id'] = user_id               
+                resp = make_response(redirect(url_for('landingPage')))
+                # login(resp,str(user_id))
+                return resp;
+    else:
+        kw = dict(pagetitle='Signup')
+        # USER = initialize()
+        # if USER:
+        #     kw['UserLogin']=USER.user_name
+        #     kw['LogoutSignup']='logout'
+        return render_template('signup.html',**kw)    
+
 @app.route('/disconnect')
 @app.route('/logout')
 def disconnect():
@@ -406,94 +499,6 @@ def gdisconnect():
         return response
 
 
-@app.route('/login',methods=['GET','POST'])
-def showLogin():
-    if request.method == 'POST':        
-        user_name = request.form['username']
-        password = request.form['password']
-        valid_user = False
-        user = getUserByName(user_name)
-        if user :
-            valid_user = True
-        if valid_user:
-            login_session['username']=user_name
-            login_session['user_id'] = user.id
-            resp = make_response(redirect(url_for('landingPage')))            
-            flash("You are now logged in as %s" % user_name)
-            return resp
-        else:   
-            error  = "Invalid login"
-            return render_template('login.html',error = error,uname=user_name,pagetitle='login')                 
-
-    else:    
-        # USER = initialize()
-        # if USER:
-        #     return render_template('login.html',UserLogin=USER.user_name,LogoutSignup='logout',pagetitle='login')           
-        # else:
-            # Random string or rather salt 
-            #state = ''.join(random.choice(string.letters) for x in xrange(32))   #--Python 2.x
-        state = ''.join(random.choice(string.ascii_letters) for x in range(32))    #--Python 3.x
-        login_session['state']=state
-        return render_template('login.html',STATE=state,pagetitle='login')
-
-@app.route('/signup',methods=['GET','POST'])
-def signUp():
-    if request.method == 'POST':
-
-        input_username = request.form['username']
-        input_email = request.form['email']
-        input_pw    = request.form['password']
-        input_vpw   = request.form['verify']
-
-        params = dict(uname=input_username,email=input_email)
-        params['UserLogin'] = "login"
-        params['LogoutSignup'] = "signup"        
-        params['pagetitle'] = "Signup"        
-        have_error = False
-
-        username    = valid_username(input_username) 
-        password    = valid_password(input_pw) 
-        verify      = match_password(input_pw,input_vpw) 
-        email       = valid_email(input_email)
-
-        unameerror  = None
-        pwerror     = None
-        vpwerror    = None
-        emailerror  = None
-
-        if not username:
-            params['unameerror']  = "That's not a valid username."
-            have_error = True 
-        if not password:        
-            params['pwerror']     = "That's not a valid password."
-            have_error = True 
-        elif not verify:        
-            params['vpwerror']    = "Your passwords didn't match."
-            have_error = True 
-        if not email:
-            params['emailerror']  = "That's not a valid email."
-            have_error = True  
-
-        if have_error:
-            return render_template('signup.html',**params)
-        else:
-            user = getUserByName(input_username)
-            user_id = getUserID(input_email)
-            if user or user_id:
-                params['unameerror']  = "That user already exists"
-                return render_template('signup.html',**params)
-            else:   
-                user_id = signupUser(input_username,input_username,input_pw,input_email)
-                resp = make_response(redirect(url_for('landingPage')))
-                # login(resp,str(user_id))
-                return resp;
-    else:
-        kw = dict(pagetitle='Signup')
-        # USER = initialize()
-        # if USER:
-        #     kw['UserLogin']=USER.user_name
-        #     kw['LogoutSignup']='logout'
-        return render_template('signup.html',**kw)    
 
 def createItem(name,description,category,user_id):
     newItem = Item(title=name,description=description,category=category,user_id=user_id)
@@ -523,8 +528,9 @@ def createOAuthUser(login_session):
     return user.id
 
 def signupUser(name,username,pw,email):
-    hash_pw = '1234'   
-    newUser = UserProfile(username=username,password_hash=hash_pw,email=email,oauth_user='no')
+    password = pw   
+    newUser = UserProfile(username=username,email=email,oauth_user='no')
+    newUser.hash_password(password)
     session.add(newUser)
     session.commit()    
     return newUser.id
