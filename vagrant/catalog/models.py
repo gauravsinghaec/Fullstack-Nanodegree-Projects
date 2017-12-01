@@ -1,10 +1,11 @@
-from sqlalchemy import Column,Integer,String,ForeignKey
+from sqlalchemy import Column,Integer,String,ForeignKey,DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 from passlib.apps import custom_app_context as pwd_context
 import random, string
 from itsdangerous import(TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
+import datetime
 
 Base = declarative_base()
 
@@ -52,6 +53,8 @@ class Item(Base):
     description = Column(String)
     category = Column(String)
     user_id = Column(Integer, ForeignKey('userprofile.id'))
+    create_date = Column(DateTime, nullable=False, default=datetime.datetime.now)
+    last_updated = Column(DateTime, nullable=False, default=datetime.datetime.now,onupdate=datetime.datetime.now)
     user = relationship(UserProfile)
 
     @property
