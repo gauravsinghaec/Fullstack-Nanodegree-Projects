@@ -107,6 +107,9 @@ def getCatalogItems(category):
 @app.route('/catalog/<category>/<itemname>')
 def getCatalogItemDetails(category,itemname):
     item = session.query(Item).filter_by(category=category,title=itemname).one()
+    itemCreator = getUserById(item.user_id)
+    if 'username' not in login_session or itemCreator.id != login_session['user_id']:
+        return render_template('publicitemdetail.html',session=login_session,item=item,category=category,pagetitle='Items')
     return render_template('itemdetail.html',session=login_session,item=item,category=category,pagetitle='Items')
 
 @app.route('/catalog/new',methods=['GET','POST'])
@@ -529,6 +532,13 @@ def removeItem(item):
 def getUserByName(username):
     try:
         user = session.query(UserProfile).filter_by(username=username).one()
+        return user
+    except Exception as e:
+        return None
+
+def getUserById(user_id):
+    try:
+        user = session.query(UserProfile).filter_by(id=user_id).one()
         return user
     except Exception as e:
         return None
