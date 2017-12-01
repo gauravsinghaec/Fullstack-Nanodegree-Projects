@@ -183,12 +183,6 @@ def showLogin():
             return render_template('login.html',error = error,uname=user_name,pagetitle='login')                 
 
     else:    
-        # USER = initialize()
-        # if USER:
-        #     return render_template('login.html',UserLogin=USER.user_name,LogoutSignup='logout',pagetitle='login')           
-        # else:
-            # Random string or rather salt 
-            #state = ''.join(random.choice(string.letters) for x in xrange(32))   #--Python 2.x
         state = ''.join(random.choice(string.ascii_letters) for x in range(32))    #--Python 3.x
         login_session['state']=state
         return render_template('login.html',STATE=state,pagetitle='login')
@@ -250,14 +244,9 @@ def signUp():
                 login_session['username']=input_username
                 login_session['user_id'] = user_id               
                 resp = make_response(redirect(url_for('landingPage')))
-                # login(resp,str(user_id))
                 return resp;
     else:
         kw = dict(pagetitle='Signup')
-        # USER = initialize()
-        # if USER:
-        #     kw['UserLogin']=USER.user_name
-        #     kw['LogoutSignup']='logout'
         return render_template('signup.html',**kw)    
 
 @app.route('/disconnect')
@@ -276,8 +265,6 @@ def disconnect():
         return redirect(url_for('landingPage'))
     elif ('username' in login_session):
         resp = make_response(redirect(url_for('landingPage')))
-        # logout(resp)
-        # del login_session['user_id']
         del login_session['username']
         flash("You have successfully been logged out.")
         return resp
