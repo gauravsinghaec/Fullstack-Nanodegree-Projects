@@ -8,7 +8,7 @@
 	</div>
 	<div class="row">			
 	<div class="col-md-12 text-center">		
-	<form method="POST" action="{{url_for('deleteItem',category=item.category,itemname=item.title)}}">
+	<form method="POST" action="{{url_for('deleteItem',item_id=item.id,itemname=item.title)}}">
 		<br>
 		<input type="submit" value="Delete">
 		<a href="{{url_for('getCatalogItemDetails',category=item.category,itemname=item.title)}}">Back</a>
