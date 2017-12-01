@@ -85,7 +85,7 @@ def get_auth_token():
 @app.route('/')
 @app.route('/catalog')
 def landingPage():
-    items = session.query(Item).all()
+    items = session.query(Item).order_by('last_updated desc').all()
     categories = session.query(Item.category,func.count(Item.category)).group_by(Item.category).all()
 
     #Below code show how to use HTML Template to achieve the same dynamically
@@ -98,7 +98,7 @@ def landingPage():
 @app.route('/catalog/<category>/items')
 def getCatalogItems(category):
     categories = session.query(Item.category,func.count(Item.category)).group_by(Item.category).all()
-    items = session.query(Item).filter_by(category=category).all()
+    items = session.query(Item).filter_by(category=category).order_by('last_updated desc').all()
     if items !=[]:
         return render_template('items.html',session=login_session,items = items,categories=categories,pagetitle='Items')
     else:
