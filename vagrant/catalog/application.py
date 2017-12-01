@@ -234,11 +234,16 @@ def signUp():
         if have_error:
             return render_template('signup.html',**params)
         else:
+            user_exists = False
             user = getUserByName(input_username)
-            # user_id = getUserID(input_email)
-            # if user or user_id:
             if user:
                 params['unameerror']  = "That user already exists"
+                user_exists = True
+            if (input_email and getUserID(input_email)) :    
+                params['emailerror']  = "Email already exists"    
+                user_exists = True
+            
+            if user_exists:
                 return render_template('signup.html',**params)
             else:   
                 user_id = signupUser(input_username,input_username,input_pw,input_email)
