@@ -99,7 +99,10 @@ def landingPage():
 def getCatalogItems(category):
     categories = session.query(Item.category,func.count(Item.category)).group_by(Item.category).all()
     items = session.query(Item).filter_by(category=category).all()
-    return render_template('items.html',session=login_session,items = items,categories=categories,pagetitle='Items')
+    if items !=[]:
+        return render_template('items.html',session=login_session,items = items,categories=categories,pagetitle='Items')
+    else:
+        return redirect(url_for('landingPage'))
 
 @app.route('/catalog/<category>/<itemname>')
 def getCatalogItemDetails(category,itemname):
@@ -111,7 +114,7 @@ def newItem():
     if 'username' not in login_session:
         return redirect('/login');  
     if request.method == 'POST':      
-        createItem(request.form['newitem'],request.form['description'],request.form['category'],login_session['user_id'])
+        createItem(request.form['title'],request.form['description'],request.form['category'],login_session['user_id'])
         flash('New item created')
         return  redirect(url_for('getCatalogItems',category=request.form['category']))
     else:
@@ -120,26 +123,32 @@ def newItem():
     
 @app.route('/catalog/<int:item_id>/<itemname>/edit',methods=['GET','POST'])
 def editItem(item_id,itemname):
-    item = session.query(Item).filter_by(id=item_id).one()
     if 'username' not in login_session:
         return redirect('/login');      
+    item = session.query(Item).filter_by(id=item_id).one()
     if request.method == 'POST':      
-        updateItem(request.form['title'],request.form['description'],request.form['category'],login_session['user_id'])
-        flash('Item updated succesfully')
-        return  redirect(url_for('getCatalogItems',category=request.form['category']))
+        if item !=[]:
+            fields ={}
+            fields['title'] = request.form['title']
+            fields['description'] = request.form['description']
+            fields['category'] = request.form['category']
+            updateItem(item=item,**fields)
+            flash('Item "'+item.title+'" updated successfully') 
+        return  redirect(url_for('getCatalogItems',category=fields['category']))
     else:
         return render_template('edititem.html',session=login_session,item=item,pagetitle='Edit Items')
     
 
 @app.route('/catalog/<int:item_id>/<itemname>/delete',methods=['GET','POST'])
 def deleteItem(item_id,itemname):
-    item = session.query(Item).filter_by(id=item_id).one()
     if 'username' not in login_session:
         return redirect('/login');      
+    item = session.query(Item).filter_by(id=item_id).one()
     if request.method == 'POST':      
-        deleteItem(request.form['title'],request.form['description'],request.form['category'],login_session['user_id'])
-        flash('Item deleted succesfully')
-        return  redirect(url_for('getCatalogItems',category=request.form['category']))
+        if item !=[]:
+            removeItem(item=item)
+            flash('Item "'+item.title+'" deleted successfully')
+        return  redirect(url_for('getCatalogItems',category=item.category))
     else:
         return render_template('deleteitem.html',session=login_session,item=item,pagetitle='Delete Items')
 
@@ -500,11 +509,22 @@ def gdisconnect():
 
 
 
-def createItem(name,description,category,user_id):
-    newItem = Item(title=name,description=description,category=category,user_id=user_id)
+def createItem(title,description,category,user_id):
+    newItem = Item(title=title,description=description,category=category,user_id=user_id)
     session.add(newItem)
     session.commit()
     return
+def updateItem(item,**fields):
+    item.title=fields['title']
+    item.description=fields['description']
+    item.category=fields['category']
+    session.add(item)
+    session.commit()
+    return
+
+def removeItem(item):
+    session.delete(item)
+    session.commit()
 
 def getUserByName(username):
     try:
