@@ -1,16 +1,18 @@
 import time
-from flask import Flask,render_template,url_for,request,redirect,flash,jsonify, g
+from flask import Flask, render_template, url_for, request, redirect, flash, jsonify, g
 from models import Base, Item, UserProfile
 
 from flask import make_response
 from flask import session as login_session
-import random,string
+import random
+import string
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy import func
-import os, re
+import os
+import re
 import json
 
 from oauth2client.client import flow_from_clientsecrets
@@ -31,141 +33,196 @@ session = DBSession()
 app = Flask(__name__)
 
 
-
-CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
+CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())[
+    'web']['client_id']
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+
+
 def valid_username(username):
+    """
+    valid_username: Regex to validate username
+    Args:
+        username (data type: str): username
+    Returns:
+        return boolean True/False
+    """
     return username and USER_RE.match(username)
 
 PASSWORD_RE = re.compile(r"^.{3,20}$")
+
+
 def valid_password(password):
+    """
+    valid_password: Regex to validate password
+    Args:
+        password (data type: str): password
+    Returns:
+        return boolean True/False
+    """
     return password and PASSWORD_RE.match(password)
 
-def match_password(password,verify_password):
-    return password == verify_password 
+
+def match_password(password, verify_password):
+    """
+    match_password: function to confirm retyping password is same
+    Args:
+        password (data type: str): password
+        verify_password (data type: str): retype password
+    Returns:
+        return boolean True/False
+    """
+    return password == verify_password
 
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
+
+
 def valid_email(email):
-    return not email or EMAIL_RE.match(email) 
+    """
+    valid_username: Regex to validate email
+    Args:
+        email (data type: str): email
+    Returns:
+        return boolean True/False
+    """
+    return not email or EMAIL_RE.match(email)
 
 
-#ADD @auth.verify_password decorator here
+# ADD @auth.verify_password decorator here
 @auth.verify_password
-def verify_password(username_or_token,password):
-    #check if the token is provided as username
+def verify_password(username_or_token, password):
+    """
+    verify_password: @auth.verify_password decorator to validate login usen
+    Args:
+        username_or_token (data type: str): username or access_token
+        password (data type: str): password
+    Returns:
+        return boolean True/False
+    """
+    # check if the token is provided as username
     print "username_or_token : %s" % username_or_token
     print "password : %s" % password
     user_id = UserProfile.verify_auth_token(username_or_token)
     if user_id:
         user = session.query(UserProfile).filter_by(id=user_id).one()
     else:
-        user = session.query(UserProfile).filter_by(username=username_or_token).first()    
+        user = session.query(UserProfile).filter_by(
+            username=username_or_token).first()
         if not user:
             print "User Not Found"
             return False
         elif not user.verify_password(password):
             print "Unable to verify password"
-            return False        
+            return False
     if user:
         g.user = user
-        return True                         
+        return True
     print "User Not Found"
     return False
-        
-#add /token route here to get a token for a user with login credentials
+
+# add /token route here to get a token for a user with login credentials
+
+
 @app.route('/token')
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token()
-    return jsonify({'token':token.decode('ascii')})
-
+    return jsonify({'token': token.decode('ascii')})
 
 
 @app.route('/')
 @app.route('/catalog')
 def landingPage():
     items = session.query(Item).order_by('last_updated desc').all()
-    categories = session.query(Item.category,func.count(Item.category)).group_by(Item.category).all()
+    categories = session.query(Item.category, func.count(
+        Item.category)).group_by(Item.category).all()
 
-    #Below code show how to use HTML Template to achieve the same dynamically
-    if('username' in login_session and checkAccessToken()):   
-        return render_template('main.html',session=login_session,items = items,categories=categories,pagetitle='Home')
+    # Below code show how to use HTML Template to achieve the same dynamically
+    if('username' in login_session and checkAccessToken()):
+        return render_template('main.html', session=login_session, items=items, categories=categories, pagetitle='Home')
     else:
-        return render_template('publicmain.html',session=login_session,items = items,categories=categories,pagetitle='Home')    
+        return render_template('publicmain.html', session=login_session, items=items, categories=categories, pagetitle='Home')
+
 
 @app.route('/catalog/<category>')
 @app.route('/catalog/<category>/items')
 def getCatalogItems(category):
-    categories = session.query(Item.category,func.count(Item.category)).group_by(Item.category).all()
-    items = session.query(Item).filter_by(category=category).order_by('last_updated desc').all()
-    if items !=[]:
-        return render_template('items.html',session=login_session,items = items,categories=categories,pagetitle='Items')
+    categories = session.query(Item.category, func.count(
+        Item.category)).group_by(Item.category).all()
+    items = session.query(Item).filter_by(
+        category=category).order_by('last_updated desc').all()
+    if items != []:
+        return render_template('items.html', session=login_session, items=items, categories=categories, pagetitle='Items')
     else:
         return redirect(url_for('landingPage'))
 
+
 @app.route('/catalog/<category>/<itemname>')
-def getCatalogItemDetails(category,itemname):
-    item = session.query(Item).filter_by(category=category,title=itemname).one()
+def getCatalogItemDetails(category, itemname):
+    item = session.query(Item).filter_by(
+        category=category, title=itemname).one()
     itemCreator = getUserById(item.user_id)
     if 'username' not in login_session or itemCreator.id != login_session['user_id']:
-        return render_template('publicitemdetail.html',session=login_session,item=item,category=category,pagetitle='Items')
-    return render_template('itemdetail.html',session=login_session,item=item,category=category,pagetitle='Items')
+        return render_template('publicitemdetail.html', session=login_session, item=item, category=category, pagetitle='Items')
+    return render_template('itemdetail.html', session=login_session, item=item, category=category, pagetitle='Items')
 
-@app.route('/catalog/new',methods=['GET','POST'])
+
+@app.route('/catalog/new', methods=['GET', 'POST'])
 def newItem():
     if 'username' not in login_session:
-        return redirect('/login');  
-    if request.method == 'POST':      
-        createItem(request.form['title'],request.form['description'],request.form['category'],login_session['user_id'])
+        return redirect('/login')
+    if request.method == 'POST':
+        createItem(request.form['title'], request.form['description'], request.form[
+                   'category'], login_session['user_id'])
         flash('New item created')
-        return  redirect(url_for('getCatalogItems',category=request.form['category']))
+        return redirect(url_for('getCatalogItems', category=request.form['category']))
     else:
-        return render_template('newitem.html',session=login_session,pagetitle='New Items')
+        return render_template('newitem.html', session=login_session, pagetitle='New Items')
 
-    
-@app.route('/catalog/<int:item_id>/<itemname>/edit',methods=['GET','POST'])
-def editItem(item_id,itemname):
+
+@app.route('/catalog/<int:item_id>/<itemname>/edit', methods=['GET', 'POST'])
+def editItem(item_id, itemname):
     if 'username' not in login_session:
-        return redirect('/login');      
+        return redirect('/login')
     item = session.query(Item).filter_by(id=item_id).one()
-    if request.method == 'POST':      
-        if item !=[]:
-            fields ={}
+    if request.method == 'POST':
+        if item != []:
+            fields = {}
             fields['title'] = request.form['title']
             fields['description'] = request.form['description']
             fields['category'] = request.form['category']
-            updateItem(item=item,**fields)
-            flash('Item "'+item.title+'" updated successfully') 
-        return  redirect(url_for('getCatalogItems',category=fields['category']))
+            updateItem(item=item, **fields)
+            flash('Item "' + item.title + '" updated successfully')
+        return redirect(url_for('getCatalogItems', category=fields['category']))
     else:
-        return render_template('edititem.html',session=login_session,item=item,pagetitle='Edit Items')
-    
+        return render_template('edititem.html', session=login_session, item=item, pagetitle='Edit Items')
 
-@app.route('/catalog/<int:item_id>/<itemname>/delete',methods=['GET','POST'])
-def deleteItem(item_id,itemname):
+
+@app.route('/catalog/<int:item_id>/<itemname>/delete', methods=['GET', 'POST'])
+def deleteItem(item_id, itemname):
     if 'username' not in login_session:
-        return redirect('/login');      
+        return redirect('/login')
     item = session.query(Item).filter_by(id=item_id).one()
-    if request.method == 'POST':      
-        if item !=[]:
+    if request.method == 'POST':
+        if item != []:
             removeItem(item=item)
-            flash('Item "'+item.title+'" deleted successfully')
-        return  redirect(url_for('getCatalogItems',category=item.category))
+            flash('Item "' + item.title + '" deleted successfully')
+        return redirect(url_for('getCatalogItems', category=item.category))
     else:
-        return render_template('deleteitem.html',session=login_session,item=item,pagetitle='Delete Items')
+        return render_template('deleteitem.html', session=login_session, item=item, pagetitle='Delete Items')
+
 
 @app.route('/catalog.json')
 @auth.login_required
 def getCatalog():
     items = session.query(Item).all()
-    if items :
-        return jsonify(catalog = [i.serialize for i in items])
+    if items:
+        return jsonify(catalog=[i.serialize for i in items])
 
 
-@app.route('/login',methods=['GET','POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def showLogin():
-    if request.method == 'POST':        
+    if request.method == 'POST':
         user_name = request.form['username']
         password = request.form['password']
         valid_user = False
@@ -173,81 +230,84 @@ def showLogin():
         if user and user.verify_password(password):
             valid_user = True
         if valid_user:
-            login_session['username']=user_name
+            login_session['username'] = user_name
             login_session['user_id'] = user.id
-            resp = make_response(redirect(url_for('landingPage')))            
+            resp = make_response(redirect(url_for('landingPage')))
             flash("You are now logged in as %s" % user_name)
             return resp
-        else:   
-            error  = "Invalid login"
-            return render_template('login.html',error = error,uname=user_name,pagetitle='login')                 
+        else:
+            error = "Invalid login"
+            return render_template('login.html', error=error, uname=user_name, pagetitle='login')
 
-    else:    
-        state = ''.join(random.choice(string.ascii_letters) for x in range(32))    #--Python 3.x
-        login_session['state']=state
-        return render_template('login.html',STATE=state,pagetitle='login')
+    else:
+        state = ''.join(random.choice(string.ascii_letters)
+                        for x in range(32))  # --Python 3.x
+        login_session['state'] = state
+        return render_template('login.html', STATE=state, pagetitle='login')
 
-@app.route('/signup',methods=['GET','POST'])
+
+@app.route('/signup', methods=['GET', 'POST'])
 def signUp():
     if request.method == 'POST':
 
         input_username = request.form['username']
         input_email = request.form['email']
-        input_pw    = request.form['password']
-        input_vpw   = request.form['verify']
+        input_pw = request.form['password']
+        input_vpw = request.form['verify']
 
-        params = dict(uname=input_username,email=input_email)
+        params = dict(uname=input_username, email=input_email)
         params['UserLogin'] = "login"
-        params['LogoutSignup'] = "signup"        
-        params['pagetitle'] = "Signup"        
+        params['LogoutSignup'] = "signup"
+        params['pagetitle'] = "Signup"
         have_error = False
 
-        username    = valid_username(input_username) 
-        password    = valid_password(input_pw) 
-        verify      = match_password(input_pw,input_vpw) 
-        email       = valid_email(input_email)
+        username = valid_username(input_username)
+        password = valid_password(input_pw)
+        verify = match_password(input_pw, input_vpw)
+        email = valid_email(input_email)
 
-        unameerror  = None
-        pwerror     = None
-        vpwerror    = None
-        emailerror  = None
+        unameerror = None
+        pwerror = None
+        vpwerror = None
+        emailerror = None
 
         if not username:
-            params['unameerror']  = "That's not a valid username."
-            have_error = True 
-        if not password:        
-            params['pwerror']     = "That's not a valid password."
-            have_error = True 
-        elif not verify:        
-            params['vpwerror']    = "Your passwords didn't match."
-            have_error = True 
+            params['unameerror'] = "That's not a valid username."
+            have_error = True
+        if not password:
+            params['pwerror'] = "That's not a valid password."
+            have_error = True
+        elif not verify:
+            params['vpwerror'] = "Your passwords didn't match."
+            have_error = True
         if not email:
-            params['emailerror']  = "That's not a valid email."
-            have_error = True  
+            params['emailerror'] = "That's not a valid email."
+            have_error = True
 
         if have_error:
-            return render_template('signup.html',**params)
+            return render_template('signup.html', **params)
         else:
             user_exists = False
             user = getUserByName(input_username)
             if user:
-                params['unameerror']  = "That user already exists"
+                params['unameerror'] = "That user already exists"
                 user_exists = True
-            if (input_email and getUserID(input_email)) :    
-                params['emailerror']  = "Email already exists"    
+            if (input_email and getUserID(input_email)):
+                params['emailerror'] = "Email already exists"
                 user_exists = True
-            
+
             if user_exists:
-                return render_template('signup.html',**params)
-            else:   
-                user_id = signupUser(input_username,input_username,input_pw,input_email)
-                login_session['username']=input_username
-                login_session['user_id'] = user_id               
+                return render_template('signup.html', **params)
+            else:
+                user_id = signupUser(input_username, input_pw, input_email)
+                login_session['username'] = input_username
+                login_session['user_id'] = user_id
                 resp = make_response(redirect(url_for('landingPage')))
-                return resp;
+                return resp
     else:
         kw = dict(pagetitle='Signup')
-        return render_template('signup.html',**kw)    
+        return render_template('signup.html', **kw)
+
 
 @app.route('/disconnect')
 @app.route('/logout')
@@ -272,7 +332,9 @@ def disconnect():
         flash("You were not logged in")
         return redirect(url_for('landingPage'))
 
-# START FACEBOOK SIGN IN 
+# START FACEBOOK SIGN IN
+
+
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
     if request.args.get('state') != login_session['state']:
@@ -282,7 +344,6 @@ def fbconnect():
     access_token = request.data.decode()
     print("access token received %s " % access_token)
 
-
     app_id = json.loads(open('fb_client_secrets.json', 'r').read())[
         'web']['app_id']
     app_secret = json.loads(
@@ -291,7 +352,6 @@ def fbconnect():
         app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
-
 
     # Use token to get user info from API
     userinfo_url = "https://graph.facebook.com/v2.8/me"
@@ -358,10 +418,11 @@ def fbdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (
+        facebook_id, access_token)
 
     # url = 'https://graph.facebook.com/XXXXXX/permissions?access_token=EAAcPdwtESfUBAIImCgDZCGjFSxFsD6Y8TFkO3hNak9ZB566lxFohnaLQcM8ZCDvp3z6iRCvhmzmGZCdLeGRPFDYqRDIuBaNy7so9ADp1z7rOG0gxJPZA3x84k6ijx1QgTkZAojMbIYMm16zgtRrjEJWo9YMGs9ug8wYHDOuMv61QZDZD'
-    
+
     h = httplib2.Http()
     result = h.request(url, 'DELETE')
     logging.warning('FB DELETE %s' % result[0])
@@ -369,13 +430,16 @@ def fbdisconnect():
         clearLoginSession()
         del login_session['facebook_id']
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.'), 400)
+        response = make_response(json.dumps(
+            'Failed to revoke token for given user.'), 400)
         response.headers['Content-Type'] = 'application/json'
-        return response            
+        return response
 
     return "You have been logged out"
 
-# END FACEBOOK SIGN IN 
+# END FACEBOOK SIGN IN
+
+
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     # Validate state token
@@ -427,12 +491,13 @@ def gconnect():
 
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
-    # check also if access token is valid or expired, if expired then resrore the access token
+    # check also if access token is valid or expired, if expired then resrore
+    # the access token
     stored_url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
-           % stored_access_token)
+                  % stored_access_token)
     stored_h = httplib2.Http()
     stored_result = json.loads(stored_h.request(stored_url, 'GET')[1])
-    
+
     if stored_access_token is not None and gplus_id == stored_gplus_id and stored_result.get('error') is None:
         response = make_response(json.dumps('Current user is already connected.'),
                                  200)
@@ -457,7 +522,7 @@ def gconnect():
     # See if user exists, if it doesn't make a new one
     user_id = getUserID(login_session['email'])
     if not user_id:
-        user_id=createOAuthUser(login_session)      
+        user_id = createOAuthUser(login_session)
     login_session['user_id'] = user_id
 
     output = ''
@@ -473,18 +538,21 @@ def gconnect():
 
 # DISCONNECT - Revoke a current user's token and reset their login_session
 
+
 @app.route('/gdisconnect')
 def gdisconnect():
     access_token = login_session.get('access_token')
     if access_token is None:
         print("Access Token is None")
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(json.dumps(
+            'Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     print("In gdisconnect access token is %s" % access_token)
     print("User name is: ")
     print(login_session['username'])
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session[
+        'access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print("result is")
@@ -498,68 +566,150 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(json.dumps(
+            'Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
 
-
-def createItem(title,description,category,user_id):
-    newItem = Item(title=title,description=description,category=category,user_id=user_id)
+def createItem(title, description, category, user_id):
+    """
+    createItem: This function creates the catalog item with given values
+    Args:
+        title (data type: str): item's title
+        description (data type: str): item's description
+        category (data type: str): item's category
+        user_id (data type: int): user who is creating the item
+    Returns:
+        no return value
+    """
+    newItem = Item(title=title, description=description,
+                   category=category, user_id=user_id)
     session.add(newItem)
     session.commit()
     return
-def updateItem(item,**fields):
-    item.title=fields['title']
-    item.description=fields['description']
-    item.category=fields['category']
+
+
+def updateItem(item, **fields):
+    """
+    updateItem: This function updates the given catalog item with updated values
+    Args:
+        item (data type: dictionary): item object
+        **fields (data type: dictionary): key:values paired object
+    Returns:
+        no return value
+    """
+    item.title = fields['title']
+    item.description = fields['description']
+    item.category = fields['category']
     session.add(item)
     session.commit()
     return
 
+
 def removeItem(item):
+    """
+    removeItem: This function removes the catalog item from database
+    Args:
+        item (data type: dictionary): item object
+    Returns:
+        no return value
+    """
     session.delete(item)
     session.commit()
 
+
 def getUserByName(username):
+    """
+    getUserById: this function finds user if the username is valid
+    Args:
+        username (data type: str): Unique username
+    Returns:
+        return user object if found otherwiese None
+    """
     try:
         user = session.query(UserProfile).filter_by(username=username).one()
         return user
     except Exception as e:
         return None
 
+
 def getUserById(user_id):
+    """
+    getUserById: this function finds user if the user_id is valid
+    Args:
+        user_id (data type: int): Unique user ID
+    Returns:
+        return user object if found otherwiese None
+    """
     try:
         user = session.query(UserProfile).filter_by(id=user_id).one()
         return user
     except Exception as e:
         return None
 
+
 def getUserID(email):
+    """
+    getUserID: this function finds user if the email is registered
+    Args:
+        email (data type: str): user's email
+    Returns:
+        return unique user_id if found otherwiese None
+    """
     try:
         user = session.query(UserProfile).filter_by(email=email).one()
-        return user.id  
+        return user.id
     except Exception as e:
         return None
 
+
 def createOAuthUser(login_session):
-    newUser = UserProfile(username=login_session['username'],email=login_session['email'],picture=login_session['picture'],oauth_user='yes')
+    """
+    createOAuthUser: This function creates new user in database on first time OAuth login
+    Args:
+        login_session (data type: dictionary): this object has user OAuth details
+    Returns:
+        returns unique user_id on successfull oauth login
+    """
+    newUser = UserProfile(username=login_session['username'], email=login_session[
+                          'email'], picture=login_session['picture'], oauth_user='yes')
     session.add(newUser)
     session.commit()
-    user = session.query(UserProfile).filter_by(email=login_session['email']).one()
+    user = session.query(UserProfile).filter_by(
+        email=login_session['email']).one()
     return user.id
 
-def signupUser(name,username,pw,email):
-    password = pw   
-    newUser = UserProfile(username=username,email=email,oauth_user='no')
+
+def signupUser(username, pw, email):
+    """
+    signupUser: This function creates new user in database on signup
+    Args:
+        username (data type: str): input username
+        password (data type: str): input password
+        email (data type: str): input email
+    Returns:
+        returns unique user_id on successfull signup
+    """
+    password = pw
+    newUser = UserProfile(username=username, email=email, oauth_user='no')
     newUser.hash_password(password)
     session.add(newUser)
-    session.commit()    
+    session.commit()
     return newUser.id
 
+
 def checkAccessToken():
+    """
+    checkAccessToken: Check if the access token for OAuth login is valid of not
+    Args:
+        no argument needed
+    Returns:
+        returns boolean True/False 
+    """
+
     stored_access_token = login_session.get('access_token')
-    result={}
+    result = {}
     if stored_access_token:
         h = httplib2.Http()
         if login_session.get('gplus_id') is not None:
@@ -567,29 +717,37 @@ def checkAccessToken():
                    % stored_access_token)
             result = json.loads(h.request(url, 'GET')[1])
         if login_session.get('facebook_id') is not None:
-            url = ('https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email' 
-                   % stored_access_token)                               
+            url = ('https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email'
+                   % stored_access_token)
             result = json.loads(h.request(url, 'GET')[1].decode())
         if result.get('error') is not None:
             flash('Seesion expired- You are being logged out')
             if login_session.get('gplus_id'):
                 del login_session['gplus_id']
-            if login_session.get('facebook_id'):            
+            if login_session.get('facebook_id'):
                 del login_session['facebook_id']
             del login_session['access_token']
             clearLoginSession()
             return False
     return True
 
+
 def clearLoginSession():
+    """
+    clearLoginSession: this function is used to clear the session elements
+    Args:
+        no argument needed
+    Returns:
+        no return value
+    """
     del login_session['user_id']
     del login_session['username']
     del login_session['email']
-    del login_session['picture']    
+    del login_session['picture']
 
 if __name__ == '__main__':
     app.secret_key = 'super_secret_key'
     app.debug = True
     # PORT = int(os.environ.get('PORT'))
     PORT = 8000
-    app.run(host='0.0.0.0',port=PORT)
+    app.run(host='0.0.0.0', port=PORT)
