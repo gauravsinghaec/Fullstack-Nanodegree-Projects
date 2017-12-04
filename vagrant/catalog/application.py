@@ -21,6 +21,8 @@ import httplib2
 import requests
 import logging
 
+from functools import wraps
+
 from flask_httpauth import HTTPBasicAuth
 auth = HTTPBasicAuth()
 
@@ -123,6 +125,38 @@ def verify_password(username_or_token, password):
 # add /token route here to get a token for a user with login credentials
 
 
+def login_required(f):
+    """
+    A function decorator to avoid that code repetition
+    fo checking user login status
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if g.user is None:
+            return redirect(url_for('showLogin', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@app.before_request
+def before_request():
+    """
+    Any functions that are decorated with before_request will run 
+    before the view function each time a request is received
+    """
+    g.user = None
+
+    #pull user info from the database based on login_session id
+    if 'user_id' in login_session:
+        try:
+            try:
+                g.user = getUserById(login_session['user_id'])
+            except TypeError:  # session probably expired
+                pass
+        except KeyError:
+            pass
+
+
 @app.route('/token')
 @auth.login_required
 def get_auth_token():
@@ -168,9 +202,8 @@ def getCatalogItemDetails(category, itemname):
 
 
 @app.route('/catalog/new', methods=['GET', 'POST'])
+@login_required
 def newItem():
-    if 'username' not in login_session:
-        return redirect('/login')
     if request.method == 'POST':
         createItem(request.form['title'], request.form['description'], request.form[
                    'category'], login_session['user_id'])
@@ -181,9 +214,8 @@ def newItem():
 
 
 @app.route('/catalog/<int:item_id>/<itemname>/edit', methods=['GET', 'POST'])
+@login_required
 def editItem(item_id, itemname):
-    if 'username' not in login_session:
-        return redirect('/login')
     item = session.query(Item).filter_by(id=item_id).one()
     if request.method == 'POST':
         if item != []:
@@ -199,9 +231,8 @@ def editItem(item_id, itemname):
 
 
 @app.route('/catalog/<int:item_id>/<itemname>/delete', methods=['GET', 'POST'])
+@login_required
 def deleteItem(item_id, itemname):
-    if 'username' not in login_session:
-        return redirect('/login')
     item = session.query(Item).filter_by(id=item_id).one()
     if request.method == 'POST':
         if item != []:
