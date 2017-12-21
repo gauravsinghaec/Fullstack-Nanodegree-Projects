@@ -268,9 +268,14 @@ def deleteItem(item_id, itemname):
 @app.route('/catalog.json')
 @auth.login_required
 def getCatalog():
-    items = session.query(Item).all()
-    if items:
-        return jsonify(catalog=[i.serialize for i in items])
+    categories = session.query(Item.category, func.count(
+        Item.category)).group_by(Item.category).all()
+    Category = []
+    if categories:
+        for cat in categories:
+            items = session.query(Item).filter_by(category=cat.category).all()
+            Category.append({'Item' : [i.serialize for i in items], 'name' : cat.category})
+    return jsonify(Category=Category)
 
 
 @app.route('/login', methods=['GET', 'POST'])
