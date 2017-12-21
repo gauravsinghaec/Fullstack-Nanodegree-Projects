@@ -146,7 +146,8 @@ def before_request():
     """
     g.user = None
 
-    #pull user info from the database based on login_session id
+    # pull user info from the database based on login_session id
+    # this will set flask variable g and will be used in login_required def above
     if 'user_id' in login_session:
         try:
             try:
@@ -155,6 +156,20 @@ def before_request():
                 pass
         except KeyError:
             pass
+
+
+# def ownership_required(f):
+#     """
+#     A function decorator to avoid unauthorized CRUD
+#     """
+#     @wraps(f)
+#     def decorated_function(*args, **kwargs):
+#         item = session.query(Item).filter_by(id=item_id).one()
+#         if item.user_id != login_session['user_id']:
+#             flash('unauthorized access: Only the onwer can edit/delete items')
+#             return redirect(url_for('showLogin', next=request.url))
+#         return f(*args, **kwargs)
+#     return decorated_function
 
 
 @app.route('/token')
@@ -215,6 +230,7 @@ def newItem():
 
 @app.route('/catalog/<int:item_id>/<itemname>/edit', methods=['GET', 'POST'])
 @login_required
+# @ownership_required
 def editItem(item_id, itemname):
     item = session.query(Item).filter_by(id=item_id).one()
     if request.method == 'POST':
@@ -227,8 +243,11 @@ def editItem(item_id, itemname):
             flash('Item "' + item.title + '" updated successfully')
         return redirect(url_for('getCatalogItems', category=fields['category']))
     else:
-        return render_template('edititem.html', session=login_session, item=item, pagetitle='Edit Items')
-
+        if item.user_id == g.user.id:
+            return render_template('edititem.html', session=login_session, item=item, pagetitle='Edit Items')
+        else:
+            flash('unauthorized access: Only the onwer can edit/delete items')
+            return redirect(url_for('showLogin', next=request.url))            
 
 @app.route('/catalog/<int:item_id>/<itemname>/delete', methods=['GET', 'POST'])
 @login_required
@@ -240,8 +259,11 @@ def deleteItem(item_id, itemname):
             flash('Item "' + item.title + '" deleted successfully')
         return redirect(url_for('getCatalogItems', category=item.category))
     else:
-        return render_template('deleteitem.html', session=login_session, item=item, pagetitle='Delete Items')
-
+        if item.user_id == g.user.id:
+            return render_template('deleteitem.html', session=login_session, item=item, pagetitle='Delete Items')
+        else:
+            flash('unauthorized access: Only the onwer can edit/delete items')
+            return redirect(url_for('showLogin', next=request.url))
 
 @app.route('/catalog.json')
 @auth.login_required
