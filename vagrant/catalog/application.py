@@ -1,8 +1,9 @@
 import time
-from flask import Flask, render_template, url_for, request, redirect, flash, jsonify, g
+from flask import Flask, render_template, url_for, request, redirect, flash
+
 from models import Base, Item, UserProfile
 
-from flask import make_response
+from flask import make_response, jsonify, g
 from flask import session as login_session
 import random
 import string
@@ -147,7 +148,8 @@ def before_request():
     g.user = None
 
     # pull user info from the database based on login_session id
-    # this will set flask variable g and will be used in login_required def above
+    # this will set flask variable g and will be used in login_required def
+    # above
     if 'user_id' in login_session:
         try:
             try:
@@ -188,9 +190,11 @@ def landingPage():
 
     # Below code show how to use HTML Template to achieve the same dynamically
     if('username' in login_session and checkAccessToken()):
-        return render_template('main.html', session=login_session, items=items, categories=categories, pagetitle='Home')
+        return render_template('main.html', session=login_session, items=items,
+                               categories=categories, pagetitle='Home')
     else:
-        return render_template('publicmain.html', session=login_session, items=items, categories=categories, pagetitle='Home')
+        return render_template('publicmain.html', session=login_session,
+                        items=items, categories=categories, pagetitle='Home')
 
 
 @app.route('/catalog/<category>')
@@ -247,7 +251,8 @@ def editItem(item_id, itemname):
             return render_template('edititem.html', session=login_session, item=item, pagetitle='Edit Items')
         else:
             flash('unauthorized access: Only the onwer can edit/delete items')
-            return redirect(url_for('showLogin', next=request.url))            
+            return redirect(url_for('showLogin', next=request.url))
+
 
 @app.route('/catalog/<int:item_id>/<itemname>/delete', methods=['GET', 'POST'])
 @login_required
@@ -265,6 +270,7 @@ def deleteItem(item_id, itemname):
             flash('unauthorized access: Only the onwer can edit/delete items')
             return redirect(url_for('showLogin', next=request.url))
 
+
 @app.route('/catalog.json')
 @auth.login_required
 def getCatalog():
@@ -274,7 +280,8 @@ def getCatalog():
     if categories:
         for cat in categories:
             items = session.query(Item).filter_by(category=cat.category).all()
-            Category.append({'Item' : [i.serialize for i in items], 'name' : cat.category})
+            Category.append(
+                {'Item': [i.serialize for i in items], 'name': cat.category})
     return jsonify(Category=Category)
 
 
