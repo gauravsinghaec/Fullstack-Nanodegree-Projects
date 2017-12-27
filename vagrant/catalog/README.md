@@ -5,24 +5,35 @@ The Item Catalog project consists of developing an application that provides a l
 ## Getting Started
 
 Run below to set up the database required for the application
-  python models.py
+```
+python models.py
+```
+
 
 Run below to start the application at http://localhost:8000/catalog
-  python application.py
+```
+python application.py
+```
 
-To view particular category, click items under category listing
-
-To login 
-http://localhost:8000/login
-
-To logout 
-http://localhost:8000/logout
-
-To http://localhost:8000/signup
-  username  Min 3 and Maximum 20 character among special character only underscore & hyphen are allowed . No spaces
-  password  Min 3 and Maximum 20 character
-
+* To view particular category, click items under category listing
 * Login is required to create/edit/delete an item
+
+Use below URL to login 
+```
+http://localhost:8000/login
+```
+
+Use below URL to logout 
+```
+http://localhost:8000/logout
+```
+
+Use below URL to register
+```
+http://localhost:8000/signup
+```
+* username  Min 3 and Maximum 20 character among special character only underscore & hyphen are allowed . No spaces
+* password  Min 3 and Maximum 20 character
 
 ### API JSON Endpoint
 http://localhost:8000/catalog.json
