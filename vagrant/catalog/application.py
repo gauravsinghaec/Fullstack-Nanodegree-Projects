@@ -142,7 +142,7 @@ def login_required(f):
 @app.before_request
 def before_request():
     """
-    Any functions that are decorated with before_request will run 
+    Any functions that are decorated with before_request will run
     before the view function each time a request is received
     """
     g.user = None
@@ -168,7 +168,7 @@ def before_request():
 #     def decorated_function(*args, **kwargs):
 #         item = session.query(Item).filter_by(id=item_id).one()
 #         if item.user_id != login_session['user_id']:
-#             flash('unauthorized access: Only the onwer can edit/delete items')
+#             flash('unauthorized access: Only the onwer can edit/delete item')
 #             return redirect(url_for('showLogin', next=request.url))
 #         return f(*args, **kwargs)
 #     return decorated_function
@@ -223,8 +223,8 @@ def getCatalogItemDetails(category, itemname):
     item = session.query(Item).filter_by(
         category=category, title=itemname).one()
     itemCreator = getUserById(item.user_id)
-    if ('username' not in login_session
-            or itemCreator.id != login_session['user_id']):
+    if ('username' not in login_session or
+            itemCreator.id != login_session['user_id']):
         return render_template('publicitemdetail.html', session=login_session,
                                item=item, category=category,
                                pagetitle='Items')
@@ -431,25 +431,26 @@ def fbconnect():
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?\
-        grant_type=fb_exchange_token&client_id=%s&client_secret=%s\
-        &fb_exchange_token=%s' % (app_id, app_secret, access_token)
+    url = ('https://graph.facebook.com/oauth/access_token?' +
+           'grant_type=fb_exchange_token&client_id=%s&client_secret=%s' +
+           '&fb_exchange_token=%s' % (app_id, app_secret, access_token))
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
 
     # Use token to get user info from API
     userinfo_url = "https://graph.facebook.com/v2.8/me"
     '''
-        Due to the formatting for the result from the server token exchange we have to
-        split the token first on commas and select the first index which gives us the key : value
-        for the server access token then we split it on colons to pull out the actual token value
-        and replace the remaining quotes with nothing so that it can be used directly in the graph
-        api calls
+        Due to the formatting for the result from the server token exchange,
+        we have to split the token first on commas and select the first index
+        which gives us the key : value for the server access token then we
+        split it on colons to pull out the actual token value and replace the
+        remaining quotes with nothing so that it can be used directly in the
+        graph api calls
     '''
     token = result.decode().split(',')[0].split(':')[1].replace('"', '')
 
-    url = 'https://graph.facebook.com/v2.8/me?access_token=%s\
-        &fields=name,id,email' % token
+    url = ('https://graph.facebook.com/v2.8/me?access_token=%s' +
+           '&fields=name,id,email' % token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     # print("url sent for API access:%s"% url)
@@ -464,9 +465,9 @@ def fbconnect():
     # The token must be stored in the login_session in order to properly logout
     login_session['access_token'] = token
 
-   # Get user picture
-    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s\
-        &redirect=0&height=200&width=200' % token
+    # Get user picture
+    url = ('https://graph.facebook.com/v2.8/me/picture?access_token=%s' +
+           '&redirect=0&height=200&width=200' % token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result.decode())
@@ -486,8 +487,8 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 160px; height: 160px;border-radius: 150px;\
-                -webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 160px; height: 160px;border-radius: 150px;'
+    output += '-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
     flash("You are now logged in as %s" % login_session['username'])
     return output
@@ -507,8 +508,6 @@ def fbdisconnect():
 
     url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (
         facebook_id, access_token)
-
-    # url = 'https://graph.facebook.com/XXXXXX/permissions?access_token=EAAcPdwtESfUBAIImCgDZCGjFSxFsD6Y8TFkO3hNak9ZB566lxFohnaLQcM8ZCDvp3z6iRCvhmzmGZCdLeGRPFDYqRDIuBaNy7so9ADp1z7rOG0gxJPZA3x84k6ijx1QgTkZAojMbIYMm16zgtRrjEJWo9YMGs9ug8wYHDOuMv61QZDZD'
 
     h = httplib2.Http()
     result = h.request(url, 'DELETE')
@@ -580,13 +579,14 @@ def gconnect():
     stored_gplus_id = login_session.get('gplus_id')
     # check also if access token is valid or expired, if expired then resrore
     # the access token
-    stored_url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?\
-        access_token=%s' % stored_access_token)
+    stored_url = (
+        'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
+        % stored_access_token)
     stored_h = httplib2.Http()
     stored_result = json.loads(stored_h.request(stored_url, 'GET')[1])
 
-    if (stored_access_token is not None and gplus_id == stored_gplus_id
-            and stored_result.get('error') is None):
+    if (stored_access_token is not None and gplus_id == stored_gplus_id and
+            stored_result.get('error') is None):
         response = make_response(
             json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
@@ -681,7 +681,7 @@ def createItem(title, description, category, user_id):
 
 def updateItem(item, **fields):
     """
-    updateItem: This function updates the given catalog item with updated values
+    updateItem: This function update the given catalog item with updated values
     Args:
         item (data type: dictionary): item object
         **fields (data type: dictionary): key:values paired object
@@ -755,9 +755,10 @@ def getUserID(email):
 
 def createOAuthUser(login_session):
     """
-    createOAuthUser: This function creates new user in database on first time OAuth login
+    createOAuthUser: This function creates new user in database on
+    first time OAuth login
     Args:
-        login_session (data type: dictionary): this object has user OAuth details
+        login_session(data type: dictionary): this object has user OAuth detail
     Returns:
         returns unique user_id on successfull oauth login
     """
@@ -796,7 +797,7 @@ def checkAccessToken():
     Args:
         no argument needed
     Returns:
-        returns boolean True/False 
+        returns boolean True/False
     """
 
     stored_access_token = login_session.get('access_token')
@@ -804,13 +805,12 @@ def checkAccessToken():
     if stored_access_token:
         h = httplib2.Http()
         if login_session.get('gplus_id') is not None:
-            url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?\
-                    access_token=%s'
-                   % stored_access_token)
+            url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?' +
+                   'access_token=%s' % stored_access_token)
             result = json.loads(h.request(url, 'GET')[1])
         if login_session.get('facebook_id') is not None:
-            url = ('https://graph.facebook.com/v2.8/me?\
-                    access_token=%s&fields=name,id,email'
+            url = ('https://graph.facebook.com/v2.8/me?' +
+                   'access_token=%s&fields=name,id,email'
                    % stored_access_token)
             result = json.loads(h.request(url, 'GET')[1].decode())
         if result.get('error') is not None:
