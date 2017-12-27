@@ -190,11 +190,17 @@ def landingPage():
 
     # Below code show how to use HTML Template to achieve the same dynamically
     if('username' in login_session and checkAccessToken()):
-        return render_template('main.html', session=login_session, items=items,
-                               categories=categories, pagetitle='Home')
+        return render_template('main.html',
+                               session=login_session,
+                               items=items,
+                               categories=categories,
+                               pagetitle='Home')
     else:
-        return render_template('publicmain.html', session=login_session,
-                        items=items, categories=categories, pagetitle='Home')
+        return render_template('publicmain.html',
+                               session=login_session,
+                               items=items,
+                               categories=categories,
+                               pagetitle='Home')
 
 
 @app.route('/catalog/<category>')
@@ -205,7 +211,9 @@ def getCatalogItems(category):
     items = session.query(Item).filter_by(
         category=category).order_by('last_updated desc').all()
     if items != []:
-        return render_template('items.html', session=login_session, items=items, categories=categories, pagetitle='Items')
+        return render_template('items.html', session=login_session,
+                               items=items, categories=categories,
+                               pagetitle='Items')
     else:
         return redirect(url_for('landingPage'))
 
@@ -215,21 +223,28 @@ def getCatalogItemDetails(category, itemname):
     item = session.query(Item).filter_by(
         category=category, title=itemname).one()
     itemCreator = getUserById(item.user_id)
-    if 'username' not in login_session or itemCreator.id != login_session['user_id']:
-        return render_template('publicitemdetail.html', session=login_session, item=item, category=category, pagetitle='Items')
-    return render_template('itemdetail.html', session=login_session, item=item, category=category, pagetitle='Items')
+    if ('username' not in login_session
+            or itemCreator.id != login_session['user_id']):
+        return render_template('publicitemdetail.html', session=login_session,
+                               item=item, category=category,
+                               pagetitle='Items')
+    return render_template('itemdetail.html', session=login_session,
+                           item=item, category=category,
+                           pagetitle='Items')
 
 
 @app.route('/catalog/new', methods=['GET', 'POST'])
 @login_required
 def newItem():
     if request.method == 'POST':
-        createItem(request.form['title'], request.form['description'], request.form[
-                   'category'], login_session['user_id'])
+        createItem(request.form['title'], request.form['description'],
+                   request.form['category'], login_session['user_id'])
         flash('New item created')
-        return redirect(url_for('getCatalogItems', category=request.form['category']))
+        return redirect(url_for('getCatalogItems',
+                                category=request.form['category']))
     else:
-        return render_template('newitem.html', session=login_session, pagetitle='New Items')
+        return render_template('newitem.html',
+                               session=login_session, pagetitle='New Items')
 
 
 @app.route('/catalog/<int:item_id>/<itemname>/edit', methods=['GET', 'POST'])
@@ -237,6 +252,9 @@ def newItem():
 # @ownership_required
 def editItem(item_id, itemname):
     item = session.query(Item).filter_by(id=item_id).one()
+    if item.user_id != g.user.id:
+        flash('unauthorized access: Only the onwer can edit/delete items')
+        return redirect(url_for('showLogin', next=request.url))
     if request.method == 'POST':
         if item != []:
             fields = {}
@@ -245,30 +263,27 @@ def editItem(item_id, itemname):
             fields['category'] = request.form['category']
             updateItem(item=item, **fields)
             flash('Item "' + item.title + '" updated successfully')
-        return redirect(url_for('getCatalogItems', category=fields['category']))
+        return redirect(url_for('getCatalogItems',
+                                category=fields['category']))
     else:
-        if item.user_id == g.user.id:
-            return render_template('edititem.html', session=login_session, item=item, pagetitle='Edit Items')
-        else:
-            flash('unauthorized access: Only the onwer can edit/delete items')
-            return redirect(url_for('showLogin', next=request.url))
-
+        return render_template('edititem.html', session=login_session,
+                               item=item, pagetitle='Edit Items')
 
 @app.route('/catalog/<int:item_id>/<itemname>/delete', methods=['GET', 'POST'])
 @login_required
 def deleteItem(item_id, itemname):
     item = session.query(Item).filter_by(id=item_id).one()
+    if item.user_id != g.user.id:
+        flash('unauthorized access: Only the onwer can edit/delete items')
+        return redirect(url_for('showLogin', next=request.url))
     if request.method == 'POST':
         if item != []:
             removeItem(item=item)
             flash('Item "' + item.title + '" deleted successfully')
         return redirect(url_for('getCatalogItems', category=item.category))
     else:
-        if item.user_id == g.user.id:
-            return render_template('deleteitem.html', session=login_session, item=item, pagetitle='Delete Items')
-        else:
-            flash('unauthorized access: Only the onwer can edit/delete items')
-            return redirect(url_for('showLogin', next=request.url))
+        return render_template('deleteitem.html', session=login_session,
+                               item=item, pagetitle='Delete Items')
 
 
 @app.route('/catalog.json')
@@ -302,7 +317,8 @@ def showLogin():
             return resp
         else:
             error = "Invalid login"
-            return render_template('login.html', error=error, uname=user_name, pagetitle='login')
+            return render_template('login.html', error=error,
+                                   uname=user_name, pagetitle='login')
 
     else:
         state = ''.join(random.choice(string.ascii_letters)
@@ -413,8 +429,9 @@ def fbconnect():
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
-        app_id, app_secret, access_token)
+    url = 'https://graph.facebook.com/oauth/access_token?\
+        grant_type=fb_exchange_token&client_id=%s&client_secret=%s\
+        &fb_exchange_token=%s' % (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
 
@@ -429,7 +446,8 @@ def fbconnect():
     '''
     token = result.decode().split(',')[0].split(':')[1].replace('"', '')
 
-    url = 'https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email' % token
+    url = 'https://graph.facebook.com/v2.8/me?access_token=%s\
+        &fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     # print("url sent for API access:%s"% url)
@@ -445,7 +463,8 @@ def fbconnect():
     login_session['access_token'] = token
 
    # Get user picture
-    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
+    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s\
+        &redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result.decode())
@@ -465,7 +484,8 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 160px; height: 160px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 160px; height: 160px;border-radius: 150px;\
+                -webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
     flash("You are now logged in as %s" % login_session['username'])
     return output
@@ -558,14 +578,15 @@ def gconnect():
     stored_gplus_id = login_session.get('gplus_id')
     # check also if access token is valid or expired, if expired then resrore
     # the access token
-    stored_url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
-                  % stored_access_token)
+    stored_url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?\
+        access_token=%s' % stored_access_token)
     stored_h = httplib2.Http()
     stored_result = json.loads(stored_h.request(stored_url, 'GET')[1])
 
-    if stored_access_token is not None and gplus_id == stored_gplus_id and stored_result.get('error') is None:
-        response = make_response(json.dumps('Current user is already connected.'),
-                                 200)
+    if (stored_access_token is not None and gplus_id == stored_gplus_id
+            and stored_result.get('error') is None):
+        response = make_response(
+            json.dumps('Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -596,7 +617,8 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 160px; height: 160px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 160px; height: 160px;border-radius: 150px;\
+    -webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("You are now logged in as %s" % login_session['username'])
     print("done!")
     return output
@@ -616,8 +638,8 @@ def gdisconnect():
     print("In gdisconnect access token is %s" % access_token)
     print("User name is: ")
     print(login_session['username'])
-    url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session[
-        'access_token']
+    url = ('https://accounts.google.com/o/oauth2/revoke?token=%s'
+           % login_session['access_token'])
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print("result is")
@@ -737,8 +759,10 @@ def createOAuthUser(login_session):
     Returns:
         returns unique user_id on successfull oauth login
     """
-    newUser = UserProfile(username=login_session['username'], email=login_session[
-                          'email'], picture=login_session['picture'], oauth_user='yes')
+    newUser = UserProfile(username=login_session['username'],
+                          email=login_session['email'],
+                          picture=login_session['picture'],
+                          oauth_user='yes')
     session.add(newUser)
     session.commit()
     user = session.query(UserProfile).filter_by(
@@ -778,11 +802,13 @@ def checkAccessToken():
     if stored_access_token:
         h = httplib2.Http()
         if login_session.get('gplus_id') is not None:
-            url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'
+            url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?\
+                    access_token=%s'
                    % stored_access_token)
             result = json.loads(h.request(url, 'GET')[1])
         if login_session.get('facebook_id') is not None:
-            url = ('https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email'
+            url = ('https://graph.facebook.com/v2.8/me?\
+                    access_token=%s&fields=name,id,email'
                    % stored_access_token)
             result = json.loads(h.request(url, 'GET')[1].decode())
         if result.get('error') is not None:
