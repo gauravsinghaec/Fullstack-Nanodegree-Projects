@@ -269,6 +269,7 @@ def editItem(item_id, itemname):
         return render_template('edititem.html', session=login_session,
                                item=item, pagetitle='Edit Items')
 
+
 @app.route('/catalog/<int:item_id>/<itemname>/delete', methods=['GET', 'POST'])
 @login_required
 def deleteItem(item_id, itemname):
@@ -287,7 +288,7 @@ def deleteItem(item_id, itemname):
 
 
 @app.route('/catalog.json')
-@auth.login_required
+@login_required
 def getCatalog():
     categories = session.query(Item.category, func.count(
         Item.category)).group_by(Item.category).all()
@@ -407,6 +408,7 @@ def disconnect():
     elif ('username' in login_session):
         resp = make_response(redirect(url_for('landingPage')))
         del login_session['username']
+        del login_session['user_id']
         flash("You have successfully been logged out.")
         return resp
     else:
