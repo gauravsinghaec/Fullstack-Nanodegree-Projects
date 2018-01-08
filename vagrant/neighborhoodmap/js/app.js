@@ -46,31 +46,36 @@ var Place = function(data){
 var ViewModel = function(){
             var self = this;
 
+            //KO observable for Location Listview
             this.locationList = ko.observableArray([]);
-
+            
+            //KO observable for input filter
             this.filterInputText = ko.observable('');
             
+            //Initial load in Location list observables using locations MODEL data
             intialLocationsFromServer.forEach(function(place){
                self.locationList.push(new Place(place));
             });
 				
-
+            //Callback function for real time text Filter event
+            //It shows the filtered marker and filtered list
             this.filterLocationList = function(data,event){
-                 filter = $('#filter-text').val().toUpperCase();
-                 self.filterWithinLocationList(filter);
-                 return true;
+               filter = $('#filter-text').val().toUpperCase();
+               self.filterWithinLocationList(filter);
+               return true;
             };
 
+            //Modular funtion to filter marker on map and location list
             self.filterWithinLocationList = function (inputText){
-              for (var i = 0; i < self.markers.length; i++) {
-                var refText=self.markers[i].title.toUpperCase();
-                if (refText.indexOf(inputText) != -1) {
+               for (var i = 0; i < self.markers.length; i++) {
+                  var refText=self.markers[i].title.toUpperCase();
+                  if (refText.indexOf(inputText) != -1) {
                   self.markers[i].setMap(map);
-                } else {
+                  } else {
                   self.markers[i].setMap(null);
-                }
-              }
-              self.locationList([]);
+                  }
+               }
+               self.locationList([]);
                intialLocationsFromServer.forEach(function(place){
                   var refText=place.title.toUpperCase();
                   if (refText.indexOf(inputText) != -1) {
@@ -79,6 +84,8 @@ var ViewModel = function(){
                });              
             };
 
+            //Callback function for onclick event if a place is selected from the list.
+            //It animates the marker and opens an infowindow on it with wiki link data (if available).
             this.selectThisLocation = function(){
                // self.currentLocation(this);
                // $('#filter-text').val(this.title);
@@ -99,10 +106,10 @@ var ViewModel = function(){
                }
               }
             };
+
             // This function populates the infowindow when the marker is clicked. We'll only allow
             // one infowindow which will open at the marker that is clicked, and populate based
             // on that markers position.
-
             var populateInfoWindow = function(marker, infowindow) {
                // Check to make sure the infowindow is not already opened on this marker.
                if (infowindow.marker != marker) {
@@ -127,6 +134,8 @@ var ViewModel = function(){
                }
             };            
 
+            //This function is used to make AJAX call to Wiki API and populate infowindow with data
+            // also it shows error message in infowindow if API call fails 
             var ajaxCallForWikiData = function(marker, infowindow) {
                   var $wikidiv =$('<div class="wiki"><h4>Relevant Wikipedia Links</h4></div>');       
                   var $wikiElem = $('<ul id="wikipedia-links"></ul>');    
@@ -142,7 +151,7 @@ var ViewModel = function(){
                     $wikiElem.text("Failed to get wikipedia resources");
                   },8000);
                     
-
+                  //AJAX call to retrieve data from Wikipedia   
                   $.ajax({
                   url: wikiurl,
                   dataType: "jsonp",      
