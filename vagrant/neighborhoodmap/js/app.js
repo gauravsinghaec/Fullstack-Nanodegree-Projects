@@ -105,7 +105,8 @@ var ViewModel = function(){
 
             var populateInfoWindow = function(marker, infowindow) {
                // Check to make sure the infowindow is not already opened on this marker.
-               if (infowindow.marker != marker) {                  
+               if (infowindow.marker != marker) {
+
                   if(infowindow.marker)
                      {
                         infowindow.marker.setAnimation(null);
@@ -120,8 +121,51 @@ var ViewModel = function(){
                      marker.setAnimation(null);
                      self.filterInputText('');
                   });
+
+                  ajaxCallForWikiData(marker, infowindow);
+
                }
             };            
+
+            var ajaxCallForWikiData = function(marker, infowindow) {
+                  var $wikidiv =$('<div class="wiki"><h4>Relevant Wikipedia Links</h4></div>');       
+                  var $wikiElem = $('<ul id="wikipedia-links"></ul>');    
+                  var $address = marker.title;
+                  var wikiurl = "https://en.wikipedia.org/w/api.php?action=opensearch&search="+$address + '&format=json&callback=wikiCallback';
+                    //? action=query&titles=Main%20Page&prop=revisions&rvprop=content&format=json";
+                  //console.log(wikiurl);
+                  var $wikilink ;           
+                  var $wikilinkdata;                  
+                  //Adding a Timer and executing an annonymous fallback function to set the failed wiki text element 
+                  //if the response is not received
+                  var wikiRequestTimeout = setTimeout(function(){
+                    $wikiElem.text("Failed to get wikipedia resources");
+                  },8000);
+                    
+
+                  $.ajax({
+                  url: wikiurl,
+                  dataType: "jsonp",      
+                  success: function(response){
+                            var addresswikilist = response[1];
+                            $wikidiv.append($wikiElem);
+                            for (var i=0;i<addresswikilist.length;i++)    {
+                                $wikilinkdata = addresswikilist[i];
+                                $wikilink  = 'http://en.wikipedia.org/wiki/'+ $wikilinkdata ;
+                                var $wikiElemItem = '<li><a target ="_blank" href="'+$wikilink+ '">' +$wikilinkdata+ '</a>'+'</li>';
+                                $wikiElem.append($wikiElemItem);  
+                            }
+                            //clearing the timer once wiki responce is received and element is added in the section
+                            clearTimeout(wikiRequestTimeout);
+                        }
+                  }).done(function(response) {
+                     console.log( "AJAX wiki call success" )
+                     infowindow.setContent('<div>' + marker.title + '</div>'+$('<div />').append($wikidiv).html());
+                  }).fail(function() {
+                     infowindow.setContent('<div>' + marker.title + '</div>' +
+                      '<div>No Wiki Link Found</div>');
+                  });               
+            }
 
             // Create a new blank array for all the listing markers.
             self.markers = [];
