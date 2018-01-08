@@ -39,8 +39,8 @@ var intialLocationsFromServer =  [{
             ];
 
 var Place = function(data){
-				this.title = data.title,
-         	this.position = data.location
+				this.title = data.title;
+         	this.position = data.location;
 };
 
 var ViewModel = function(){
@@ -168,13 +168,13 @@ var ViewModel = function(){
                             clearTimeout(wikiRequestTimeout);
                         }
                   }).done(function(response) {
-                     console.log( "AJAX wiki call success" )
+                     console.log( "AJAX wiki call success" );
                      infowindow.setContent('<div>' + marker.title + '</div>'+$('<div />').append($wikidiv).html());
                   }).fail(function() {
                      infowindow.setContent('<div>' + marker.title + '</div>' +
                       '<div>No Wiki Link Found</div>');
                   });               
-            }
+            };
 
             // Create a new blank array for all the listing markers.
             self.markers = [];
