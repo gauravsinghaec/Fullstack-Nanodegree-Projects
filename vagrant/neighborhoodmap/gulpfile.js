@@ -25,9 +25,9 @@ var uglify = require('gulp-uglify');
 gulp.task('default',['copy-html','scripts','scripts-dist','styles','lint'], function(){
 	// Below code wathes for any change in .scss file 
 	// and executes the styles task whenever sass files change
-	gulp.watch('sass/**/*.scss',['styles']);
-	gulp.watch('js/**/*.js',['lint']);
-	gulp.watch('/index.html',['copy-html']);
+	gulp.watch('./sass/**/*.scss',['styles']);
+	gulp.watch('./src/js/**/*.js',['lint']);
+	gulp.watch('./src/index.html',['copy-html']);
 	gulp.watch('./dist/index.html').on('change',browserSync.reload);
 	browserSync.init({server: './dist'});
 });
@@ -35,17 +35,17 @@ gulp.task('default',['copy-html','scripts','scripts-dist','styles','lint'], func
 gulp.task('dist',['copy-html','styles','lint','scripts-dist']);
 
 gulp.task('scripts',function(){
-	gulp.src('js/**/*.js')
+	gulp.src('src/js/**/*.js')
 		.pipe(concat('all.js'))
 		.pipe(gulp.dest('dist/js'));
 });
 
 gulp.task('scripts-dist',function(){
-	gulp.src('js/**/*.js')
+	gulp.src('src/js/**/*.js')
 		.pipe(order([
-			'js/lib/jQuery.js',
-			'js/lib/knockout-3.2.0.js',
-			'js/app.js'
+			'src/js/lib/jQuery.js',
+			'src/js/lib/knockout-3.2.0.js',
+			'src/js/app.js'
 		],{ base: './' }))	
 		.pipe(concat('all.js'))
 		.pipe(uglify())
@@ -53,7 +53,7 @@ gulp.task('scripts-dist',function(){
 });
 
 gulp.task('copy-html',function(){
-	gulp.src('./index.html')
+	gulp.src('./src/index.html')
 		.pipe(gulp.dest('./dist'));
 });
 
@@ -62,7 +62,7 @@ gulp.task('lint', function() {
 	// So, it's best to have gulp ignore the directory as well. 
 	// Also, Be sure to return the stream from the task; 
 	// Otherwise, the task may end before the stream has finished. 
-	return gulp.src(['**/*.js','!node_modules/**','!js/lib/**'])
+	return gulp.src(['src/**/*.js','!node_modules/**','!src/js/lib/**'])
 		// eslint() attaches the lint output to the "eslint" property 
 		// of the file object so it can be used by other modules. 
 		.pipe(eslint())
