@@ -195,6 +195,9 @@ var ViewModel = function(){
 	var bounds = new google.maps.LatLngBounds();
 
 	// The following group uses the location array to create an array of markers on initialize.
+	var markerClick = function(){
+		populateInfoWindow(this, self.largeInfowindow);
+	};
 	for (var i = 0; i < this.locationList().length; i++) {
 		// Get the position from the location array.
 		var position = self.locationList()[i].position;
@@ -210,9 +213,7 @@ var ViewModel = function(){
 		// Push the marker to our array of markers.
 		self.markers.push(marker);
 		// Create an onclick event to open an infowindow at each marker.
-		marker.addListener('click', function() {
-			populateInfoWindow(this, self.largeInfowindow);
-		});
+		marker.addListener('click', markerClick);
 		bounds.extend(self.markers[i].position);
 	}
 	// Extend the boundaries of the map for each marker
