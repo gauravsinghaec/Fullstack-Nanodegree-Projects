@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Neighborhood Map-Udacity Project</title>
+    <!-- <link rel="stylesheet" href="css/bootstrap.min.css"> -->
+    <link rel="stylesheet" type="text/css" href="css/app.css">
+</head>
+<body>
+    <div class="main">
+    <header>
+        <h2>Tourist Places in Rajasthan</h2>
+            <div class="menu_logo">
+                <a id="menu">
+                <svg viewBox="0 0 44 44">
+                    <rect x="4" y="12" fill="currentColor" width="32px" height="2"></rect>
+                    <rect x="4" y="20" fill="currentColor" width="32px" height="2"></rect>
+                    <rect x="4" y="28" fill="currentColor" width="32px" height="2"></rect>
+                </svg>              
+                </a>        
+            </div>    
+    </header>
+    <div id="placelistview" class="listview">
+        <div id="filter">
+            <input id="filter-text" data-bind="event: {keyup: filterLocationList}, textInput: filterInputText" type="text" placeholder="Station Location">
+            <input id="filter-button" type="button" value="Filter">
+        </div>
+        <ul id="places-list" data-bind="foreach: locationList">
+            <li><button data-bind="click: $parent.selectThisLocation, text: $data.title"></button></li>
+        </ul>      
+    </div>
+    <div id="map"></div>
+
+    </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBtsirN68OAeo4fv8o0iEOZ5dJlEAHLUxA">
+    </script>    
+    <script src="js/all.js" async defer></script>
+</body>
+</html>
