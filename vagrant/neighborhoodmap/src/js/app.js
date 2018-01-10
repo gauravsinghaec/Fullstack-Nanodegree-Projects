@@ -109,7 +109,7 @@ var ViewModel = function(){
 		for (var i = 0; i < self.markers.length; i++) {
 			if (place.title == self.markers[i].title) {
 				self.markers[i].setAnimation(google.maps.Animation.BOUNCE);
-				populateInfoWindow(self.markers[i], self.largeInfowindow);
+				populateInfoWindow(self.markers[i], largeInfowindow);
 			} else {
 				self.markers[i].setAnimation(null);
 			}
@@ -184,7 +184,7 @@ var ViewModel = function(){
 
 	// Create a new blank array for all the listing markers.
 	self.markers = [];
-
+	/*
 	// Constructor creates a new map - only center and zoom are required.
 	var map = new google.maps.Map(document.getElementById('map'), {
 		center: {lat: 26.996471, lng: 75.876472},
@@ -192,11 +192,12 @@ var ViewModel = function(){
 	});
 
 	self.largeInfowindow = new google.maps.InfoWindow();
+	*/
 	var bounds = new google.maps.LatLngBounds();
 
 	// The following group uses the location array to create an array of markers on initialize.
 	var markerClick = function(){
-		populateInfoWindow(this, self.largeInfowindow);
+		populateInfoWindow(this, largeInfowindow);
 	};
 	for (var i = 0; i < this.locationList().length; i++) {
 		// Get the position from the location array.
@@ -220,4 +221,4 @@ var ViewModel = function(){
 	map.fitBounds(bounds);
 };
 
-ko.applyBindings(new ViewModel());
+// ko.applyBindings(new ViewModel());
