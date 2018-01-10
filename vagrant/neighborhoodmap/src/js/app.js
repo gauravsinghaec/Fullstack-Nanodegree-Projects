@@ -69,7 +69,8 @@ var ViewModel = function(){
 	//Callback function for real time text Filter event
 	//It shows the filtered marker and filtered list
 	this.filterLocationList = function(){
-		var filter = $('#filter-text').val().toUpperCase();
+		// var filter = $('#filter-text').val().toUpperCase();
+		var filter = self.filterInputText().toUpperCase();
 		self.filterWithinLocationList(filter);
 		return true;
 	};
