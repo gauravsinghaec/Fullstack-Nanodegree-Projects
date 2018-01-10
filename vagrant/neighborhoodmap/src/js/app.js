@@ -110,9 +110,7 @@ var ViewModel = function(){
 		self.searchWithinLocationList(this);
 	};
 
-	// This function hides all markers outside the polygon,
-	// and shows only the ones within it. This is so that the
-	// user can specify an exact area of search.
+	//Modular funtion to filter only the selected place from location list
 	self.searchWithinLocationList = function(place){
 		for (var i = 0; i < self.markers.length; i++) {
 			if (place.title == self.markers[i].title) {
@@ -152,38 +150,36 @@ var ViewModel = function(){
 	//This function is used to make AJAX call to Wiki API and populate infowindow with data
 	// also it shows error message in infowindow if API call fails 
 	var ajaxCallForWikiData = function(marker, infowindow) {
-		var $wikidiv =$('<div class="wiki"><h4>Relevant Wikipedia Links</h4></div>');       
-		var $wikiElem = $('<ul id="wikipedia-links"></ul>');    
-		var $address = marker.title;
-		var wikiurl = 'https://en.wikipedia.org/w/api.php?action=opensearch&search='+$address + '&format=json&callback=wikiCallback';
-		//? action=query&titles=Main%20Page&prop=revisions&rvprop=content&format=json";
-		//console.log(wikiurl);
-		var $wikilink ;           
-		var $wikilinkdata;                  
+		var address = marker.title;
+		var wikiurl = 'https://en.wikipedia.org/w/api.php?action=opensearch&search='+address + '&format=json&callback=wikiCallback';
+		
+		var wikilink ;           
+		var wikilinkdata;                  
+		var wikiElemItem ='';
+		
 		//Adding a Timer and executing an annonymous fallback function to set the failed wiki text element 
 		//if the response is not received
 		var wikiRequestTimeout = setTimeout(function(){
-			$wikiElem.text('Failed to get wikipedia resources');
+			infowindow.setContent('<div>' + marker.title + '</div>'+'<h5>' + 'Failed to get wikipedia resources' + '</h5>');
 		},8000);
+		
 		//AJAX call to retrieve data from Wikipedia   
 		$.ajax({
 			url: wikiurl,
 			dataType: 'jsonp',      
 			success: function(response){
-				var addresswikilist = response[1];
-				$wikidiv.append($wikiElem);
+				var addresswikilist = response[1];				
 				for (var i=0;i<addresswikilist.length;i++)    {
-					$wikilinkdata = addresswikilist[i];
-					$wikilink  = 'http://en.wikipedia.org/wiki/'+ $wikilinkdata ;
-					var $wikiElemItem = '<li><a target ="_blank" href="'+$wikilink+ '">' +$wikilinkdata+ '</a>'+'</li>';
-					$wikiElem.append($wikiElemItem);  
+					wikilinkdata = addresswikilist[i];
+					wikilink  = 'http://en.wikipedia.org/wiki/'+ wikilinkdata ;
+					wikiElemItem += '<li><a target ="_blank" href="'+wikilink+ '">' +wikilinkdata+ '</a>'+'</li>';
 				}
 				//clearing the timer once wiki responce is received and element is added in the section
 				clearTimeout(wikiRequestTimeout);
 			}
 		}).done(function() {
-			// console.log( 'AJAX wiki call success');
-			infowindow.setContent('<div>' + marker.title + '</div>'+$('<div />').append($wikidiv).html());
+			console.log( 'AJAX wiki call success');
+			infowindow.setContent('<h5>' + 'Relevant Wikipedia Links' + '</h5>' + wikiElemItem);
 		}).fail(function() {
 			infowindow.setContent('<div>' + marker.title + '</div>' +
 			'<div>No Wiki Link Found</div>');
