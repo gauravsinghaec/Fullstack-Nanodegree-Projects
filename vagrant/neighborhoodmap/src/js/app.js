@@ -48,12 +48,19 @@ var ViewModel = function(){
 	var self = this;
 	//Create an onclick event to open list view of location.
 	//when user click on hamburger menu on mobile
+	/*
 	var menu = $('#menu');
 	var drawer = $('.listview');
 	menu.on('click', function(e) {
 		drawer.toggleClass('open');
 		e.stopPropagation();
 	});
+	*/
+	this.setMenuIcon = ko.observable(false);
+	this.showMenuIcon = function(){
+		self.setMenuIcon(!self.setMenuIcon());
+		console.log(self.setMenuIcon());
+	};
 
 	//KO observable for Location Listview
 	this.locationList = ko.observableArray([]);
@@ -185,7 +192,7 @@ var ViewModel = function(){
 
 	// Create a new blank array for all the listing markers.
 	self.markers = [];
-	/*
+	/* Moved the code to initMap function under inline JavaScript in index.html
 	// Constructor creates a new map - only center and zoom are required.
 	var map = new google.maps.Map(document.getElementById('map'), {
 		center: {lat: 26.996471, lng: 75.876472},

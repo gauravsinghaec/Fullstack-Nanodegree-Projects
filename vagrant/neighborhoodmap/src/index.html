@@ -11,7 +11,7 @@
     <header>
         <h2>Tourist Places in Rajasthan</h2>
             <div class="menu_logo">
-                <a id="menu">
+                <a id="menu" data-bind="click: showMenuIcon">
                 <svg viewBox="0 0 44 44">
                     <rect x="4" y="12" fill="currentColor" width="32px" height="2"></rect>
                     <rect x="4" y="20" fill="currentColor" width="32px" height="2"></rect>
@@ -20,7 +20,7 @@
                 </a>        
             </div>    
     </header>
-    <div id="placelistview" class="listview">
+    <div id="placelistview" class="listview" data-bind="css: {open: setMenuIcon}">
         <div id="filter">
             <input id="filter-text" data-bind="event: {keyup: filterLocationList}, textInput: filterInputText" type="text" placeholder="Station Location">
             <input id="filter-button" type="button" value="Filter">
