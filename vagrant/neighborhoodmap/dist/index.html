@@ -48,12 +48,12 @@
 			ko.applyBindings(new ViewModel());
 		}
 		function googleError(){
-			document.getElementById('map-error').text = 'Error in Map!';
+			document.getElementById('map-error').textContent = 'Error in Map!';
 		}            
     </script>    
+    <script src="js/all.js"></script>    
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBtsirN68OAeo4fv8o0iEOZ5dJlEAHLUxA&callback=initMap" onerror="googleError()">
     </script>     
-    <script src="js/all.js"></script>    
 </body>
 </html>
