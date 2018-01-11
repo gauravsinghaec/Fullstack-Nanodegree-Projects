@@ -157,12 +157,6 @@ var ViewModel = function(){
 		var wikilinkdata;                  
 		var wikiElemItem ='';
 		
-		//Adding a Timer and executing an annonymous fallback function to set the failed wiki text element 
-		//if the response is not received
-		var wikiRequestTimeout = setTimeout(function(){
-			infowindow.setContent('<div>' + marker.title + '</div>'+'<h5>' + 'Failed to get wikipedia resources' + '</h5>');
-		},8000);
-		
 		//AJAX call to retrieve data from Wikipedia   
 		$.ajax({
 			url: wikiurl,
@@ -174,8 +168,6 @@ var ViewModel = function(){
 					wikilink  = 'http://en.wikipedia.org/wiki/'+ wikilinkdata ;
 					wikiElemItem += '<li><a target ="_blank" href="'+wikilink+ '">' +wikilinkdata+ '</a>'+'</li>';
 				}
-				//clearing the timer once wiki responce is received and element is added in the section
-				clearTimeout(wikiRequestTimeout);
 			}
 		}).done(function() {
 			console.log( 'AJAX wiki call success');
