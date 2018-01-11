@@ -160,17 +160,14 @@ var ViewModel = function(){
 		//AJAX call to retrieve data from Wikipedia   
 		$.ajax({
 			url: wikiurl,
-			dataType: 'jsonp',      
-			success: function(response){
-				var addresswikilist = response[1];				
-				for (var i=0;i<addresswikilist.length;i++)    {
-					wikilinkdata = addresswikilist[i];
-					wikilink  = 'http://en.wikipedia.org/wiki/'+ wikilinkdata ;
-					wikiElemItem += '<li><a target ="_blank" href="'+wikilink+ '">' +wikilinkdata+ '</a>'+'</li>';
-				}
+			dataType: 'jsonp'
+		}).done(function(response) {
+			var addresswikilist = response[1];				
+			for (var i=0;i<addresswikilist.length;i++)    {
+				wikilinkdata = addresswikilist[i];
+				wikilink  = 'http://en.wikipedia.org/wiki/'+ wikilinkdata ;
+				wikiElemItem += '<li><a target ="_blank" href="'+wikilink+ '">' +wikilinkdata+ '</a>'+'</li>';
 			}
-		}).done(function() {
-			console.log( 'AJAX wiki call success');
 			infowindow.setContent('<h5>' + 'Relevant Wikipedia Links' + '</h5>' + wikiElemItem);
 		}).fail(function() {
 			infowindow.setContent('<div>' + marker.title + '</div>' +
