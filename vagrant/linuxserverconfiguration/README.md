@@ -23,6 +23,22 @@ sudo apt-get update
 sudo apt-get upgrade
 ```
 
+*Check after ssh login to the linux instance if it still shows some package can be update*
+
+![dist-upgrade](https://user-images.githubusercontent.com/15084301/34945009-be0d7e50-fa27-11e7-9a37-bb2350b76bf1.png)
+
+```
+Note : Trying to run just sudo apt-get update && sudo apt-get upgrade wont install packages kept back 
+because apt-get upgrade by default does not try to install new packages (such as new kernel versions).
+from the man page: under no circumstances are currently installed packages removed, 
+or packages not already installed retrieved and installed.
+However apt-get dist-upgrade allows you to install new packages when needed (ie, a new kernel version).
+
+
+sudo apt-get dist-upgrade
+```
+
+
 ### Create new user 'grader' and give 'grader' permissions
 * Create a new user called grader
 ```
@@ -109,15 +125,43 @@ ssh grader@13.126.222.78 -p 2200 -i ~/.ssh/AWSConfigPubPrivKey
 
 ## Prepare to deploy your project
 ### Firewall setup
+Ubuntu comes with the firewall preinstalled called ufw which in not currently active.
+Verify the firewall status using below command:
+```
+sudo ufw status
+```
+Lets starts adding some rules to firewall then we will turn it on.
+
+Block all incoming request initially. 
 ```
 sudo ufw default deny incoming
+```
+Allow any request our server is trying to send out to the internet and 
+```
 sudo ufw default allow outgoing
+```
+Then allow everything one by one
+*Only allow connections for SSH (port 2200), HTTP (port 80), and NTP (port 123)*
+```
 sudo ufw allow 2200/tcp
 sudo ufw allow www 
 sudo ufw allow 123/udp
 ```
 
 ![firewalsetup](https://user-images.githubusercontent.com/15084301/34913940-faaf6944-f92e-11e7-9fbc-5958e20c82e3.png)
+
+Verify status and enable
+```
+sudo ufw enable
+```
+
+Reverify the status
+Make sure no extra port is allowed as in my case port 22 was allowed so I denied using below:
+
+```
+sudo ufw deny 22
+```
+![ufwstatus](https://user-images.githubusercontent.com/15084301/34946234-198db19c-fa2c-11e7-8829-d10492304f32.png)
 
 ### Configure the local timezone to UTC.
 ```
