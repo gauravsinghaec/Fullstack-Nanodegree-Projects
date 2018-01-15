@@ -1,4 +1,4 @@
-# Linux Server Configiration Project
+# Linux Server Configuration Project
 
 This project teaches you to secure and set up a Linux server. By the end of this project, you will have one of your web applications running live on a secure web server.
 * Public IP: 13.126.222.78
