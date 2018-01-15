@@ -17,7 +17,7 @@ class UserProfile(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String(80), nullable=False)
-    password_hash = Column(String(64))
+    password_hash = Column(String(254))
     email = Column(String(250), index=True)
     picture = Column(String(250))
     oauth_user = Column(String(10))
@@ -68,7 +68,7 @@ class Item(Base):
         
             }
 
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
  
 
 Base.metadata.create_all(engine)
