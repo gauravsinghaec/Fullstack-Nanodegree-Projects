@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <content class="row">
-	<div class="col-lg-3 col-md-3 col-sm-3 col-xs-4 text-left">
+	<div class="col-lg-3 col-md-3 col-sm-3 col-xs-5 text-left">
 		<h3>Categories</h3>
 	      <ul class="category_list">
 			{% for category in categories %}
@@ -9,7 +9,7 @@
 			{% endfor %}	      
 		  </ul>        		
 	</div>
-	<div class="col-lg-9 col-md-9 col-sm-9 col-xs-8 text-left">
+	<div class="col-lg-9 col-md-9 col-sm-9 col-xs-7 text-left">
 		{% if 'username' in session %}
 		<a href="/catalog/new">Add Item</a>
 		{% endif %}
