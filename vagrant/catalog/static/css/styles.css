@@ -9,6 +9,9 @@ body {
 header, footer {
   background-color: #484848; }
 
+.row {
+  margin: 0px;
+}
 .main {
   /*background-image: url(../images/background.jpg);*/
   background-color: #00F2a0;
