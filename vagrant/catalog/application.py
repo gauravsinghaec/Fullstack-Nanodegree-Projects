@@ -237,6 +237,10 @@ def getCatalogItemDetails(category, itemname):
 @login_required
 def newItem():
     if request.method == 'POST':
+    	if checkDuplicateItem(request.form['title'],request.form['category']):
+    		flash('Item already exists under the selected category')	
+        	return render_template('newitem.html',
+        	                   session=login_session, pagetitle='New Items')
         createItem(request.form['title'], request.form['description'],
                    request.form['category'], login_session['user_id'])
         flash('New item created')
@@ -251,7 +255,7 @@ def newItem():
 @login_required
 # @ownership_required
 def editItem(item_id, itemname):
-    item = session.query(Item).filter_by(id=item_id).one()
+    item = session.query(Item).filter_by(id=item_id).one_or_none()
     if item.user_id != g.user.id:
         flash('unauthorized access: Only the onwer can edit/delete items')
         return redirect(url_for('showLogin', next=request.url))
@@ -261,6 +265,10 @@ def editItem(item_id, itemname):
             fields['title'] = request.form['title']
             fields['description'] = request.form['description']
             fields['category'] = request.form['category']
+            if checkDuplicateItem(fields['title'],fields['category']):
+            	flash('Item already exists under the selected category')	
+            	return render_template('edititem.html',session=login_session,
+            	                   item=item, pagetitle='Edit Items')            
             updateItem(item=item, **fields)
             flash('Item "' + item.title + '" updated successfully')
         return redirect(url_for('getCatalogItems',
@@ -273,7 +281,7 @@ def editItem(item_id, itemname):
 @app.route('/catalog/<int:item_id>/<itemname>/delete', methods=['GET', 'POST'])
 @login_required
 def deleteItem(item_id, itemname):
-    item = session.query(Item).filter_by(id=item_id).one()
+    item = session.query(Item).filter_by(id=item_id).one_or_none()
     if item.user_id != g.user.id:
         flash('unauthorized access: Only the onwer can edit/delete items')
         return redirect(url_for('showLogin', next=request.url))
@@ -662,6 +670,21 @@ def gdisconnect():
         return response
 
 
+def checkDuplicateItem(title,category):
+    """
+    checkDuplicateItem: This function checks item existense
+    Args:
+        title (data type: str): item's title
+        category (data type: str): item's category
+    Returns:
+        return true/false
+    """
+    item = session.query(Item).filter_by(
+        category=category, title=title).one_or_none()	
+    if item:
+    	return True
+    return False	
+
 def createItem(title, description, category, user_id):
     """
     createItem: This function creates the catalog item with given values
@@ -673,6 +696,7 @@ def createItem(title, description, category, user_id):
     Returns:
         no return value
     """
+
     newItem = Item(title=title, description=description,
                    category=category, user_id=user_id)
     session.add(newItem)
