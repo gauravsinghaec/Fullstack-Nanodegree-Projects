@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<content class="row">
+	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 text-left">
+		<h3>{{item.title}}</h3>
+		<p>Description: {{ item.description }}</p>
+		<br><a href="{{url_for('getCatalogItems',category=item.category)}}">Back</a>
+	</div>	
+</content>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<content class="row">
+	<div class="row">		
+		<div class="col-md-12 text-center">
+			<h2>Are you sure you want to delete "{{item.title}}" item?</h2>
+		</div>	
+	</div>
+	<div class="row">			
+	<div class="col-md-12 text-center">		
+	<form method="POST" action="{{url_for('deleteItem',item_id=item.id,itemname=item.title)}}">
+		<br>
+		<input type="submit" value="Delete">
+		<a href="{{url_for('getCatalogItemDetails',category=item.category,itemname=item.title)}}">Back</a>
+	</form>
+	</div>
+	</div>
+</content>
+{% endblock %}

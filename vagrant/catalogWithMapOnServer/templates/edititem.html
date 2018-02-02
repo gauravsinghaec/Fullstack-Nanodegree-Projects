@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<content class="row">
+	<div class="row">		
+		<div class="col-md-12 text-center">
+			<h2>Edit Item</h2>
+		</div>	
+	</div>
+	<div class="row">			
+	<div class="col-md-12 text-center">				
+	<form method="POST" action="{{url_for('editItem',item_id=item.id,itemname=item.title)}}">
+		<div class="row">
+			<div class="col-md-6 col-sm-6 col-xs-4 form-label">
+				<label>Title:</label> 
+			</div>	
+			<div class="col-md-6 col-sm-6 col-xs-8 form-field">
+				<input type="text" name="title" placeholder="{{item.title}}" value="{{item.title}}">
+			</div>	
+		</div>	
+		<div class="row">	
+			<div class="col-md-6 col-sm-6 col-xs-4 form-label">
+				<label>Description:</label> 
+			</div>	
+			<div class="col-md-6 col-sm-6 col-xs-8 form-field">				
+				<textarea type="text" name="description" placeholder="{{item.description}}" >{{item.description}}</textarea>
+			</div>	
+		</div>	
+		<div class="row">				
+			<div class="col-md-6 col-sm-6 col-xs-4 form-label">		
+				<label>Category:</label> 
+			</div>	
+			<div class="col-md-6 col-sm-6 col-xs-8 form-field">				
+				<select name="category">
+			        <option value="Soccer">Soccer</option>
+			        <option value="Basketball">Basketball</option>
+			        <option value="Hockey">Hockey</option>
+			        <option value="Football">Football</option>
+			        <option value="Baseball">Baseball</option>
+			        <option value="Skating">Skating</option>
+			        <option value="Rock Climbing">Rock Climbing</option>
+			        <option value="Snowboarding">Snowboarding</option>	        
+			        <option value="Tennis">Tennis</option>	        
+			        <option value="Badminton">Badminton</option>	        
+			        <option value="Kabaddi">Kabaddi</option>	  					
+				</select> 
+			</div>
+		</div>		
+		<input type="submit" value="Update">
+		<a href="{{url_for('getCatalogItemDetails',category=item.category,itemname=item.title)}}">Back</a>
+	</form>
+	</div>	
+	</div>	
+</content>	
+{% endblock %}
