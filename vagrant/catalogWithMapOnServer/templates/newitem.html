@@ -1,14 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
-<content class="row">
-	<div class="row">		
-		<div class="col-md-12 text-center">
-			<h1>New Item</h1>
-		</div>	
-	</div>		
-	<div class="row">			
-	<div class="col-md-12 text-center">			
+<div class="row crud-form text-center">					
 	<form method="POST" action="{{url_for('newItem')}}" >
+		<h3>New Item</h3>
 		<div class="row">
 			<div class="col-md-6 col-sm-6 col-xs-4 form-label">
 				<label>Title:</label> 
@@ -21,7 +15,7 @@
 			<div class="col-md-6 col-sm-6 col-xs-4 form-label">
 				<label>Description:</label> 
 			</div>	
-			<div class="col-md-6 col-sm-6 col-xs-8 form-field">				
+			<div class="col-md-6 col-sm-6 col-xs-8 form-field">			
 				<textarea type="text" name="description"></textarea>
 			</div>	
 		</div>	
@@ -29,7 +23,7 @@
 			<div class="col-md-6 col-sm-6 col-xs-4 form-label">		
 				<label>Category:</label> 
 			</div>	
-			<div class="col-md-6 col-sm-6 col-xs-8 form-field">				
+			<div class="col-md-6 col-sm-6 col-xs-8 form-field">			
 				<select name="category">
 			        <option value="Soccer">Soccer</option>
 			        <option value="Basketball">Basketball</option>
@@ -46,9 +40,8 @@
 			</div>
 		</div>
 		<br>
-		<input type="submit" value="Create">
-		<a href="{{url_for('landingPage')}}">Cancel</a>
+		<button type="submit" name="submit" id="submit">Create</button> 
+		<button><a href="{{url_for('landingPage')}}">Cancel</a></button>
 	</form>
-	</div>
-</content>	
+</div>
 {% endblock %}

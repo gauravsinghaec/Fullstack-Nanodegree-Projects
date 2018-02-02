@@ -1,7 +1,11 @@
 body {
   font-family: Verdana,sans-serif;
   font-size: 16px;
-  margin: 0; }
+  margin: 0; 
+  background-image: url(../images/football-stadiam.jpg);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
 
 #top, #bottom {
   margin: 0; }
@@ -13,8 +17,8 @@ header, footer {
   margin: 0px;
 }
 .main {
-  /*background-image: url(../images/background.jpg);*/
-  background-color: #00F2a0;
+  /*background-image: url(../images/football-stadiam.jpg);*/
+   background-color: rgba(0, 0, 0, 0.5); 
   color: #ffffff; }
 
 button, .flash-message {
@@ -22,13 +26,13 @@ button, .flash-message {
   background-color: rgba(0, 0, 0, 0.8);
   outline: none; }
 
-.login, .signup, .form-result {
+.login, .signup, .form-result, .crud-form {
   background-color: rgba(0, 0, 0, 0.5);
   margin-left: 20%;
   margin-right: 20%;
   margin-top: 1%; }
 
-form input {
+input {
   color: black; }
 
 .form-label{
@@ -36,8 +40,8 @@ form input {
 }
 .form-field{
   text-align: left;
+  color: black;
 }
-
 
 table {
   margin: 0 auto;
@@ -80,7 +84,7 @@ a:hover {
   width: 24%;
   text-align: center;
   line-height: 1em;
-  padding: 1.2em;
+  padding: 1.2em 0 1.2em 0;
   text-transform: uppercase; }
 
 .nav a {
@@ -107,27 +111,92 @@ img {
 .menu_logo {
   display: none; }
 
-content {
-  color: #222222;
-}
 content ul{
   list-style: none;
   padding-left: 0;
 }
 content a{
-  color: #FF4d1b;
+  color: #cceea5;
 }
 content a:hover{
   background-color: black; 
 }
-
-
 content img {
   width: 150px;
   height: 130px;
   border-radius: 2.5em; }
 
+/* Below styles are for map div */
+#placelistview {
+  margin: 0px;
+  width: 230px;
+  height: 100vh;
+  background-color: black; }
+
+#places-list {
+  font-size: 1.2em;
+  margin: 0px;
+  padding-left: 0px; }
+
+#places-list li {
+  list-style: none;
+  padding-right: 0.1em; }
+
+#map {
+  margin-right: 0.5em;
+  margin-top: 1em;
+  bottom: 0px;
+  top: 170px;
+  height: 100%;
+  left: 232px;
+  position: absolute;
+  right: 0px; 
+}
+
+#filter-button, #filter-text {
+  margin: 0px; }
+
+#places-list button {
+  color: #cccccc;
+  background-color: black;
+  outline: none;
+  border: none; }
+
+.map-data .menu_logo {
+  display: none; }
+
+.map-data header {
+  color: white;
+  background-color: #484848;
+  height: 50px; }
+
+.map-data h3 {
+  padding: 0.2em; }
+
+.infowindow{
+  color: black;
+  font-size-adjust: all;
+}
+
+.infowindow a{
+  font-size: 1em;
+  text-decoration: underline;  
+  color: #0045bb;
+}
+.infowindow ul li{
+    padding: 0.2em;
+  }
 @media screen and (max-width: 550px) {
+  #top h2{
+    font-size: 1.5em;
+  }
+  #top #profile{
+    padding-left: 0;
+    padding-right: 0;
+  }
+  h3 {
+  font-size: 1.2em}
+
   .nav {
     z-index: 10;
     width: 200px;
@@ -154,10 +223,50 @@ content img {
   .menu_logo {
     display: inline-block;
     position: absolute;
-    right: 0;
-    padding: 1em; }
-  .login, .signup {
-    margin: 0; } }
+    top: 20px;
+    right: 8px;
+    width: 32px;
+    padding-left: 0;
+    padding-right: 0; 
+  }
+  .login, .signup, .form-result, .crud-form {
+    margin: 0; } 
+
+/* Below styles are for map div */
+  .listview {
+    z-index: 10;
+    width: 230px;
+    position: absolute;
+    background-color: black;
+    /* This trasform moves the drawer off canvas. */
+    -webkit-transform: translate(-240px, 0);
+    transform: translate(-240px, 0);
+    /* Optionally, we animate the drawer. */
+    -webkit-transition: -webkit-transform 0.3s ease;
+    transition: -webkit-transform 0.3s ease;
+    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, -webkit-transform 0.3s ease; }
+  .listview.open {
+    -webkit-transform: translate(0, 0);
+    transform: translate(0, 0);
+    -webkit-box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.5); }
+  #map {
+    top: 155px;
+    bottom: 0px;
+    left: 0px;
+    height: 100%;
+    position: absolute;
+    right: 0px;
+    margin: 8px; }
+  .map-data .menu_logo {
+    display: unset;
+    position: absolute;
+    top: 110px;
+    right: 8px;
+    width: 32px; 
+  }
+}
 
 @media screen and (min-width: 992px) {
   body {
