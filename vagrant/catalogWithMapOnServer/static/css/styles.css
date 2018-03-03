@@ -129,28 +129,29 @@ content img {
 /* Below styles are for map div */
 #placelistview {
   margin: 0px;
-  width: 230px;
+  padding: 0px;
+  /*width: 230px;*/
   height: 100vh;
   background-color: black; }
 
 #places-list {
-  font-size: 1.2em;
+/*  font-size: 1.1em;
   margin: 0px;
-  padding-left: 0px; }
+*/  padding-left: 0px; }
 
 #places-list li {
   list-style: none;
-  padding-right: 0.1em; }
+ /* padding-right: 0.1em; */
+}
 
 #map {
-  margin-right: 0.5em;
-  margin-top: 1em;
-  bottom: 0px;
+  padding:0.5em;
+  height: 100vh;
+/*  bottom: 0px;
   top: 170px;
-  height: 100%;
   left: 232px;
   position: absolute;
-  right: 0px; 
+  right: 0px; */
 }
 
 #filter-button, #filter-text {
@@ -168,7 +169,7 @@ content img {
 .map-data header {
   color: white;
   background-color: #484848;
-  height: 50px; }
+}
 
 .map-data h3 {
   padding: 0.2em; }
@@ -179,7 +180,7 @@ content img {
 }
 
 .infowindow a{
-  font-size: 1em;
+  font-size: 1.2em;
   text-decoration: underline;  
   color: #0045bb;
 }
@@ -252,17 +253,12 @@ content img {
     -webkit-box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.5);
             box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.5); }
   #map {
-    top: 155px;
-    bottom: 0px;
-    left: 0px;
-    height: 100%;
-    position: absolute;
-    right: 0px;
-    margin: 8px; }
+  width: 100vw;
+  }
   .map-data .menu_logo {
     display: unset;
     position: absolute;
-    top: 110px;
+    top: 85px;
     right: 8px;
     width: 32px; 
   }
@@ -272,4 +268,18 @@ content img {
   body {
     width: 990px;
     margin-right: auto;
-    margin-left: auto; } }
+    margin-left: auto; 
+  } 
+/*
+  #map {    
+    margin-right: 0.5em;
+    margin-top: 1em;
+    bottom: 0px;
+    top: 175px;
+    height: 100%;
+    left: calc((100% + 464px - 990px)/2);
+    position: absolute;
+    right: calc((100% - 990px)/2); */
+  }
+
+  }

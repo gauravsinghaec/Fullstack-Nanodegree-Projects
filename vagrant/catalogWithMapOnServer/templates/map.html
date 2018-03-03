@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="map-data">
-    <header>
+    <header class="row">
         <h3>Tourist Places in Rajasthan</h3>
             <div class="menu_logo">
                 <a id="menu" data-bind="click: showMenuIcon">
@@ -13,7 +13,8 @@
                 </a>        
             </div>    
     </header>
-    <div id="placelistview" class="listview" data-bind="css: {open: setMenuIcon}">
+    <div class="row">
+    <div id="placelistview" class="listview col-lg-3 col-md-3 col-sm-3 col-xs-4 text-left" data-bind="css: {open: setMenuIcon}">
         <div id="filter">
             <input id="filter-text" data-bind="event: {keyup: filterLocationList}, textInput: filterInputText" type="text" placeholder="Station Location">
         </div>
@@ -21,7 +22,8 @@
             <li><button data-bind="click: $parent.selectThisLocation, text: $data.title"></button></li>
         </ul>      
     </div>
-    <div id="map"></div>
-    <div id="map-error"></div>
+    <div id="map" class="col-lg-9 col-md-9 col-sm-9 col-xs-8"></div>
+    </div>
+    <div id="map-error" class="row"></div>
     </div>
 {% endblock %}
