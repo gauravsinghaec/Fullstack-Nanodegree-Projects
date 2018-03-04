@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row crud-form text-center">					
+	<form method="POST" action="{{url_for('catalog.deleteItem',item_id=item.id,itemname=item.title)}}">
+	<h3>Are you sure you want to delete "{{item.title}}" item?</h3>		
+		<br>
+		<button type="submit" name="submit" id="submit">Delete</button> 
+		<button><a href="{{url_for('catalog.getCatalogItemDetails',category=item.category,itemname=item.title)}}">Back</a></button>
+	</form>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row form-result">
+	<div id="result" class="col-md-12 text-center"></div>
+</div>
+<div class="row signup text-center">			
+<form method="POST">	
+<h2>Signup</h2>
+	<table>
+		<tr>
+			<td style="text-align:right">
+			<label >	Username		</label>
+			</td>
+			<td>
+				<input type="text" name="username" id="username" value="{{uname}}" required>
+			</td>
+		</tr>
+
+		<tr><td></td><td style="color:red">{{ unameerror }} </td></tr>	
+		<tr>
+			<td style="text-align:right" >
+			<label> Password 	</label>
+			</td>
+			<td>
+				<input type="password" name="password" id="password" value="{{pw}}" required>
+			</td>
+		</tr>
+		<tr><td></td><td style="color:red">{{ pwerror }} </td></tr>	
+		<tr>
+			<td style="text-align:right">
+			<label> Confirm Password 	</label>
+			</td>
+			<td>
+				<input type="password" name="verify" id="verify" value="{{vpw}}" required>
+			</td>
+		</tr>
+		<tr><td></td><td style="color:red">{{ vpwerror }} </td></tr>	
+		<tr>
+			<td style="text-align:right">
+			<label> Email (optional) 	</label>
+			</td>
+			<td>
+				<input type="email" name="email" id="email" value="{{email}}">
+			</td>
+		</tr>
+		<tr><td></td><td style="color:red">{{ emailerror }} </td></tr>	
+	</table>
+	<br>
+	<button type="submit" name="submit" id="submit">Submit</button> 
+	<button><a href="{{url_for('catalog.landingPage')}}">Cancel</a></button>
+</form>
+</div>
+{% endblock %}

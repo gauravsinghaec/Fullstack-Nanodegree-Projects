@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row crud-form text-center">					
+	<form method="POST" action="{{url_for('catalog.editItem',item_id=item.id,itemname=item.title)}}">
+		<h3>Edit Item</h3>
+		<div class="row">
+			<div class="col-md-6 col-sm-6 col-xs-4 form-label">
+				<label>Title:</label> 
+			</div>	
+			<div class="col-md-6 col-sm-6 col-xs-8 form-field">
+				<input type="text" name="title" placeholder="{{item.title}}" value="{{item.title}}">
+			</div>	
+		</div>	
+		<div class="row">	
+			<div class="col-md-6 col-sm-6 col-xs-4 form-label">
+				<label>Description:</label> 
+			</div>	
+			<div class="col-md-6 col-sm-6 col-xs-8 form-field">				
+				<textarea type="text" name="description" placeholder="{{item.description}}" >{{item.description}}</textarea>
+			</div>	
+		</div>	
+		<div class="row">				
+			<div class="col-md-6 col-sm-6 col-xs-4 form-label">		
+				<label>Category:</label> 
+			</div>	
+			<div class="col-md-6 col-sm-6 col-xs-8 form-field">				
+				<select name="category">
+			        <option value="Soccer">Soccer</option>
+			        <option value="Basketball">Basketball</option>
+			        <option value="Hockey">Hockey</option>
+			        <option value="Football">Football</option>
+			        <option value="Baseball">Baseball</option>
+			        <option value="Skating">Skating</option>
+			        <option value="Rock Climbing">Rock Climbing</option>
+			        <option value="Snowboarding">Snowboarding</option>	        
+			        <option value="Tennis">Tennis</option>	        
+			        <option value="Badminton">Badminton</option>	        
+			        <option value="Kabaddi">Kabaddi</option>	  					
+				</select> 
+			</div>
+		</div>
+	<br>	
+	<button type="submit" name="submit" id="submit">Update</button> 
+	<button><a href="{{url_for('catalog.getCatalogItemDetails',category=item.category,itemname=item.title)}}">Cancel</a></button>				
+	</form>
+</div>	
+{% endblock %}

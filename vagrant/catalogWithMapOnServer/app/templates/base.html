@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Catalog App-{{pagetitle}}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/styles.css')}}">	
+    <!-- <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/app.css')}}">	 -->
+</head>
+<body>
+	<div id="container" >
+	<header id="top" class="row">
+		<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-left">
+			<h2><a href="/catalog">Catalog App</a>	</h2>
+		</div>	
+		<div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 text-right">
+			<div class ="row userinfo">
+				<div class="col-lg-12 col-md-12 col-sm-9 col-xs-9 text-center " id="profile">			
+					{% include "header.html" %}
+				</div>			
+				<div class="col-sm-3 col-xs-3 menu_logo text-center">
+				<a id="menu">
+				<svg viewBox="0 0 44 44">
+			  		<rect x="4" y="12" fill="currentColor" width="32px" height="2"></rect>
+			  		<rect x="4" y="20" fill="currentColor" width="32px" height="2"></rect>
+			  		<rect x="4" y="28" fill="currentColor" width="32px" height="2"></rect>
+				</svg>				
+				</a>
+				</div>
+			</div>			
+		</div>
+	</header>
+	<div class="main">
+    <nav id="drawer" class="nav">
+      <ul class="nav__list">
+        <li class="nav__item"><a href="#">About</a></li>
+        <li class="nav__item"><a href="/map">Map</a></li>
+        <li class="nav__item"><a href="#">Events</a></li>
+        <li class="nav__item"><a href="#">Contact Us</a></li>
+      </ul>
+    </nav>	
+	
+	{% with messages = get_flashed_messages() %}
+	{% if messages %}    
+    {% include "flashmessage.html" %}
+	{% endif %}
+	{% endwith %}	
+	
+	{% block content %}
+	{% endblock %}
+	
+ 	<!-- <div class="row text-center"> Queried {{ trackRefresh }} seconds ago</div> -->
+	</div> 
+	<footer id ="bottom" class="row text-center">
+		<h4><a href="#">Follow us on Facebook</a></h4>
+	</footer>	
+	</div>
+	<script type="text/javascript" src="{{url_for('static', filename='js/main.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('static', filename='js/lib/jQuery.js')}}"></script>        
+    <script type="text/javascript" src="{{url_for('static', filename='js/lib/knockout-3.2.0.js')}}"></script>            
+    <script type="text/javascript">    
+        var map, largeInfowindow;        
+        function initMap(){
+            // Constructor creates a new map - only center and zoom are required.
+            map = new google.maps.Map(document.getElementById('map'),
+            {
+                center: {lat: 26.996471, lng: 75.876472},
+                zoom: 10
+            });
+            largeInfowindow = new google.maps.InfoWindow();
+        
+            //To Activate Knockout through app.js
+            // ko.applyBindings(new ViewModel());
+        }
+        function googleError(){
+            document.getElementById('map-error').textContent = 'Error in Map!';
+        }            
+    </script>           
+    <script type="text/javascript" src="{{url_for('static', filename='js/app.js')}}"></script> 	    
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBtsirN68OAeo4fv8o0iEOZ5dJlEAHLUxA&callback=initMap" onerror="googleError()">
+    </script>     	
+	<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+	<script  async defer 
+		src="https://apis.google.com/js/client:platform.js?onload=start">
+	</script>
+	<!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->    
+</body>
+</html>

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row crud-form text-center">	
+		<h3>{{item.title}}</h3>
+		<p>Description: {{ item.description }}</p>
+		<br>
+		<button><a href="{{url_for('catalog.editItem',item_id=item.id,itemname=item.title)}}">Edit</a></button> 
+
+		<button><a href="{{url_for('catalog.deleteItem',item_id=item.id,itemname=item.title)}}">Delete</a></button> 
+		
+		<button><a href="{{url_for('catalog.getCatalogItems',category=item.category)}}">Back</a></button>		
+</div>
+{% endblock %}
