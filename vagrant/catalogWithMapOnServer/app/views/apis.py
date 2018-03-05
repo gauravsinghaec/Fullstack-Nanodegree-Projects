@@ -1,6 +1,7 @@
 from .my_imports import Location, Item, UserProfile, \
                         Blueprint, render_template, \
-                        jsonify, g, func, login_session
+                        jsonify, g, func, login_session, \
+                        request
 from .globalfile import session, login_required
 
 
@@ -22,9 +23,14 @@ def verify_password(username_or_token, password):
         return boolean True/False
     """
     # check if the token is provided as username
+    print "\n***Parameters to verify_password***"
     print "username_or_token : %s" % username_or_token
     print "password : %s" % password
+    print "\n***Flask Session Object***"
     print login_session
+    print "\n***Request Header***"
+    print request.headers
+    print request.authorization
     user_id = UserProfile.verify_auth_token(username_or_token)
     if user_id:
         user = session.query(UserProfile).filter_by(id=user_id).one()
@@ -51,7 +57,7 @@ def get_auth_token():
 
 
 @apis.route('/catalog.json')
-@login_required
+@auth.login_required
 def getCatalog():
     categories = session.query(Item.category, func.count(
         Item.category)).group_by(Item.category).all()

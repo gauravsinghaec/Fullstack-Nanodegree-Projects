@@ -1,9 +1,0 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="row crud-form text-center">	
-		<h3>{{item.title}}</h3>
-		<p>Description: {{ item.description }}</p>
-		<br>
-		<button><a href="{{url_for('getCatalogItems',category=item.category)}}">Back</a></button>
-</div>	
-{% endblock %}
