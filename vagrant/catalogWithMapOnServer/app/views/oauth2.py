@@ -55,7 +55,6 @@ def fbconnect():
     # print("url sent for API access:%s"% url)
     # print("API JSON result: %s" % result)
     data = json.loads(result.decode())
-    logging.error(data)
     login_session['provider'] = 'facebook'
     login_session['username'] = data["name"]
     login_session['email'] = data["email"]
@@ -110,7 +109,6 @@ def fbdisconnect():
 
     h = httplib2.Http()
     result = h.request(url, 'DELETE')
-    logging.warning('FB DELETE %s' % result[0])
     if result[0]['status'] == '200':
         login_session.pop('state',None)
         clearLoginSession()
