@@ -1,4 +1,4 @@
-from .my_imports import Blueprint, render_template, url_for, \
+from app import Blueprint, render_template, url_for, \
                         request, flash, login_session, \
                         random, string, make_response, \
                         valid_username, valid_password, \

@@ -1,4 +1,4 @@
-from .my_imports import Location, Item, UserProfile, \
+from app import Location, Item, UserProfile, \
                         Blueprint, render_template, \
                         jsonify, g, func, login_session, \
                         request

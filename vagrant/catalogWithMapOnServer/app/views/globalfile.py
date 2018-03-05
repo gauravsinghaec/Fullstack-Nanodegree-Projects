@@ -1,4 +1,4 @@
-from .my_imports import g, redirect, url_for, request, \
+from app import g, redirect, url_for, request, \
                         login_session, wraps, \
                         Item, Base, UserProfile
 from sqlalchemy import create_engine

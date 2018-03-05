@@ -1,7 +1,7 @@
 from .globalfile import session, login_required, ownership_required, \
                         createItem, removeItem, updateItem,\
                         getUserById, checkDuplicateItem
-from .my_imports import login_session, func, flash, \
+from app import login_session, func, flash, \
                         url_for, redirect, request, \
                         Blueprint, render_template, \
                         Item

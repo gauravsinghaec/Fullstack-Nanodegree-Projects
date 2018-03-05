@@ -1,5 +1,5 @@
 from .globalfile import login_required
-from my_imports import Blueprint, render_template
+from app import Blueprint, render_template
 
 usermap = Blueprint('usermap', __name__)
 

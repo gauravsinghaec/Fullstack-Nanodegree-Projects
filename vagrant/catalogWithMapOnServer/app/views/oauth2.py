@@ -1,7 +1,7 @@
 import httplib2, json, requests
 from .globalfile import getUserID, createOAuthUser
 
-from .my_imports import Blueprint, request, flash, g, \
+from app import Blueprint, request, flash, g, \
                         url_for, redirect, make_response, \
                         login_session
 from oauth2client.client import flow_from_clientsecrets
