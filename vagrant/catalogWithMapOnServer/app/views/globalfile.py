@@ -1,14 +1,27 @@
 from app import g, redirect, url_for, request, \
                         login_session, wraps, \
-                        Item, Base, UserProfile
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+                        Item, Base, UserProfile, \
+                        app, session, flash
 
-engine = create_engine('postgresql://catalog:catalog@localhost/catalog')
+@app.before_request
+def before_request():
+    """
+    Any functions that are decorated with before_request will run
+    before the view function each time a request is received
+    """
+    g.user = None
 
-Base.metadata.bind = engine
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
+    # pull user info from the database based on login_session id
+    # this will set flask variable g and will be used in login_required def
+    # above
+    if 'user_id' in login_session:
+        try:
+            try:
+                g.user = getUserById(login_session['user_id'])
+            except TypeError:  # session probably expired
+                pass
+        except KeyError:
+            pass
 
 def redirect_dest(fallback):
     dest = request.args.get('next')

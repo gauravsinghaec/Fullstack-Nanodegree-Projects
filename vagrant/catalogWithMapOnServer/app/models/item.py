@@ -1,7 +1,8 @@
 from sqlalchemy import Column,Integer,String,ForeignKey,DateTime
 from sqlalchemy.orm import relationship
 import datetime
-from .user import Base, UserProfile
+from app import Base
+from .user import UserProfile
 
 class Item(Base):
     __tablename__ = 'catalogitem'

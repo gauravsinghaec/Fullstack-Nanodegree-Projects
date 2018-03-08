@@ -1,13 +1,11 @@
+from app import Base
 from sqlalchemy import Column,Integer,String,ForeignKey,DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, sessionmaker
-from sqlalchemy import create_engine
 from passlib.apps import custom_app_context as pwd_context
 import random, string
 from itsdangerous import(TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired)
 import datetime
 
-Base = declarative_base()
+# Base = declarative_base()
 
 #You will use this secret key to create and verify your tokens
 secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
